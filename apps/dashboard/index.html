@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SircuitLab</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #9ca3af;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #1f2937;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .online {
+            color: #22c55e;
+        }
+
+        .offline {
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>⚡ SircuitLab</h1>
+    <div class="subtitle">Home Server Dashboard</div>
+
+    <div class="card">
+        <h2>Server</h2>
+        <div id="serverStatus" class="status">Checking...</div>
+    </div>
+
+    <div class="card">
+        <h2>API</h2>
+        <div id="apiStatus" class="status">Checking...</div>
+    </div>
+
+<script>
+
+async function checkServer() {
+    try {
+        const response = await fetch("/api/health");
+
+        if (!response.ok) {
+            throw new Error("API error");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("serverStatus").innerHTML =
+            "🟢 " + data.status;
+
+        document.getElementById("serverStatus").className =
+            "status online";
+
+        document.getElementById("apiStatus").innerHTML =
+            "🟢 Online";
+
+        document.getElementById("apiStatus").className =
+            "status online";
+
+    } catch (error) {
+
+        document.getElementById("serverStatus").innerHTML =
+            "🔴 Offline";
+
+        document.getElementById("serverStatus").className =
+            "status offline";
+
+        document.getElementById("apiStatus").innerHTML =
+            "🔴 Offline";
+
+        document.getElementById("apiStatus").className =
+            "status offline";
+    }
+}
+
+checkServer();
+
+setInterval(checkServer, 10000);
+
+</script>
+
+</body>
+</html>
