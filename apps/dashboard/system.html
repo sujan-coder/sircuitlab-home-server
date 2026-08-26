@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SircuitLab // System Monitor</title>
+<style>
+:root{
+  --bg:#000;
+  --panel:#020606;
+  --line:#42514e;
+  --line2:#263330;
+  --text:#c8d1cd;
+  --muted:#71807b;
+  --cyan:#79e2df;
+  --green:#9ee493;
+  --yellow:#e4df86;
+  --red:#e99595;
+  --blue:#8ab7ff;
+  --purple:#c59be9;
+  --pink:#e7a4d8;
+  --orange:#e5ad75;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"DejaVu Sans Mono","Liberation Mono","Courier New",monospace}
+body{min-height:100vh}
+button,select{font:inherit;color:inherit}
+.page{max-width:1500px;margin:auto;padding:12px}
+.topbar{
+  border:1px solid var(--line);
+  min-height:48px;
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  gap:18px;
+  align-items:center;
+  padding:8px 12px;
+  margin-bottom:12px;
+  background:#000;
+}
+.brand{font-weight:700;color:#d9e2de}
+.brand span{color:var(--green)}
+.status{color:var(--muted)}
+.status b{color:var(--green)}
+.clock{color:var(--cyan);white-space:nowrap}
+.battery{color:var(--yellow);white-space:nowrap}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(330px,.9fr);
+  gap:12px;
+}
+.left,.right{display:flex;flex-direction:column;gap:12px}
+.panel{
+  border:1px solid var(--line);
+  background:var(--panel);
+  min-width:0;
+  overflow:hidden;
+}
+.panel-title{
+  height:34px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 10px;
+  border-bottom:1px solid var(--line2);
+  color:var(--cyan);
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.panel-title .num{color:var(--yellow)}
+.panel-body{padding:12px}
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-bottom:12px;
+}
+.metric{
+  border:1px solid var(--line2);
+  padding:8px 10px;
+  min-width:0;
+}
+.metric .label{color:var(--muted);font-size:12px}
+.metric .value{font-size:20px;color:var(--cyan);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.graph{
+  width:100%;
+  height:170px;
+  display:block;
+  background:#000;
+  border:1px solid var(--line2);
+}
+.graph.small{height:115px}
+.rows{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-top:8px}
+.row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  border-bottom:1px dotted #28322f;
+  padding:7px 0;
+  min-width:0;
+}
+.row span:first-child{color:#b9c4bf}
+.row span:last-child{color:var(--green);white-space:nowrap}
+.progress{
+  height:12px;border:1px solid var(--line);margin-top:10px;padding:2px;
+}
+.progress i{display:block;height:100%;background:var(--green);width:0%}
+.progress.mem i{background:var(--cyan)}
+.progress.disk i{background:var(--purple)}
+.netgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.netbox{border:1px solid var(--line2);padding:8px}
+.netbox .big{font-size:19px;color:var(--cyan)}
+.proc-wrap{padding:0}
+.proc-head,.proc-row{
+  display:grid;
+  grid-template-columns:58px minmax(110px,1fr) 76px 68px 68px;
+  gap:8px;
+  align-items:center;
+  padding:6px 9px;
+}
+.proc-head{
+  color:var(--muted);
+  border-bottom:1px solid var(--line2);
+  font-size:12px;
+}
+.proc-row{border-bottom:1px dotted #1e2825;font-size:12px}
+.proc-row:hover{background:#07100e}
+.proc-row .pid{color:var(--yellow)}
+.proc-row .name{color:#c8d1cd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proc-row .user{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.proc-row .cpu{color:var(--green);text-align:right}
+.proc-row .mem{color:var(--cyan);text-align:right}
+.proc-list{max-height:470px;overflow:auto}
+.empty{padding:18px;color:var(--muted)}
+.footer{padding:8px 2px;color:#56635f;font-size:11px;text-align:right}
+.bad{color:var(--red)!important}
+.warn{color:var(--yellow)!important}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .page{padding:8px}
+  .topbar{grid-template-columns:1fr auto;gap:6px}
+  .status{grid-column:1/-1;grid-row:2}
+  .clock{grid-column:2;grid-row:1}
+  .battery{grid-column:1;grid-row:1}
+  .metrics{grid-template-columns:1fr 1fr}
+  .rows{grid-template-columns:1fr}
+  .netgrid{grid-template-columns:1fr}
+  .proc-head,.proc-row{grid-template-columns:48px minmax(90px,1fr) 55px 58px}
+  .proc-head span:nth-child(4),.proc-row .user{display:none}
+  .proc-head span:nth-child(5){display:block}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="brand">SircuitLab <span>●</span></div>
+    <div class="status" id="status"><b>●</b> CONNECTING</div>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="battery" id="battery">BAT --%</div>
+  </header>
+
+  <main class="layout">
+    <section class="left">
+      <section class="panel">
+        <div class="panel-title"><span class="num">1</span> CPU</div>
+        <div class="panel-body">
+          <div class="metrics">
+            <div class="metric"><div class="label">CPU USAGE</div><div class="value" id="cpuPct">--%</div></div>
+            <div class="metric"><div class="label">LOAD</div><div class="value" id="load">--</div></div>
+            <div class="metric"><div class="label">CORES</div><div class="value" id="cores">--</div></div>
+            <div class="metric"><div class="label">THREADS</div><div class="value" id="threads">--</div></div>
+          </div>
+          <canvas class="graph" id="cpuGraph"></canvas>
+          <div class="rows">
+            <div class="row"><span>CPU TEMPERATURE</span><span id="cpuTemp">--</span></div>
+            <div class="row"><span>UPTIME</span><span id="uptime">--</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span class="num">2</span> MEMORY</div>
+        <div class="panel-body">
+          <div class="metrics">
+            <div class="metric"><div class="label">USED</div><div class="value" id="memUsed">-- GiB</div></div>
+            <div class="metric"><div class="label">TOTAL</div><div class="value" id="memTotal">-- GiB</div></div>
+            <div class="metric"><div class="label">FREE</div><div class="value" id="memFree">-- GiB</div></div>
+            <div class="metric"><div class="label">USAGE</div><div class="value" id="memPct">--%</div></div>
+          </div>
+          <canvas class="graph small" id="memGraph"></canvas>
+          <div class="progress mem"><i id="memBar"></i></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span class="num">3</span> STORAGE</div>
+        <div class="panel-body">
+          <div class="metrics">
+            <div class="metric"><div class="label">ROOT USED</div><div class="value" id="diskUsed">-- GiB</div></div>
+            <div class="metric"><div class="label">TOTAL</div><div class="value" id="diskTotal">-- GiB</div></div>
+            <div class="metric"><div class="label">FREE</div><div class="value" id="diskFree">-- GiB</div></div>
+            <div class="metric"><div class="label">USAGE</div><div class="value" id="diskPct">--%</div></div>
+          </div>
+          <div class="progress disk"><i id="diskBar"></i></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span class="num">4</span> NETWORK</div>
+        <div class="panel-body">
+          <div class="netgrid">
+            <div class="netbox">
+              <div class="label">DOWNLOAD</div>
+              <div class="big" id="rxRate">-- KiB/s</div>
+              <canvas class="graph small" id="rxGraph"></canvas>
+            </div>
+            <div class="netbox">
+              <div class="label">UPLOAD</div>
+              <div class="big" id="txRate">-- KiB/s</div>
+              <canvas class="graph small" id="txGraph"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="right">
+      <section class="panel">
+        <div class="panel-title"><span class="num">5</span> SYSTEM</div>
+        <div class="panel-body">
+          <div class="rows">
+            <div class="row"><span>HOST</span><span id="host">--</span></div>
+            <div class="row"><span>OS</span><span id="os">--</span></div>
+            <div class="row"><span>KERNEL</span><span id="kernel">--</span></div>
+            <div class="row"><span>UPTIME</span><span id="sysUptime">--</span></div>
+            <div class="row"><span>BATTERY</span><span id="batDetail">--</span></div>
+            <div class="row"><span>POWER</span><span id="power">--</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span class="num">6</span> PROCESSES</div>
+        <div class="proc-wrap">
+          <div class="proc-head">
+            <span>PID</span><span>PROGRAM</span><span>USER</span><span>CPU%</span><span>MEM%</span>
+          </div>
+          <div class="proc-list" id="processList">
+            <div class="empty">Waiting for process data...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><span class="num">7</span> TEMPERATURES</div>
+        <div class="panel-body">
+          <div class="rows" id="tempRows">
+            <div class="row"><span>SYSTEM</span><span>--</span></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="footer">SircuitLab // System Monitor</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const hist = {cpu:[],mem:[],rx:[],tx:[]};
+const MAX=80;
+let lastNet=null, lastTime=null;
+
+function push(a,v){ if(!Number.isFinite(v)) return; a.push(v); if(a.length>MAX)a.shift(); }
+function fmtBytes(v){
+  if(!Number.isFinite(v)) return "--";
+  if(v<1024) return v.toFixed(0)+" B/s";
+  if(v<1024*1024) return (v/1024).toFixed(1)+" KiB/s";
+  return (v/1024/1024).toFixed(1)+" MiB/s";
+}
+function fmtUptime(s){
+  if(!Number.isFinite(s)) return "--";
+  s=Math.max(0,Math.floor(s));
+  const d=Math.floor(s/86400); s%=86400;
+  const h=Math.floor(s/3600); s%=3600;
+  const m=Math.floor(s/60); const sec=s%60;
+  return (d?d+"d ":"")+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
+}
+function num(v){ return Number.isFinite(Number(v)) ? Number(v) : null; }
+
+function draw(id,data,color){
+  const c=$(id), r=c.getBoundingClientRect(), d=devicePixelRatio||1;
+  const w=Math.max(1,Math.floor(r.width)), h=Math.max(1,Math.floor(r.height));
+  if(c.width!==w*d||c.height!==h*d){c.width=w*d;c.height=h*d}
+  const x=c.getContext("2d"); x.setTransform(d,0,0,d,0,0);
+  x.clearRect(0,0,w,h);
+  x.strokeStyle="#15201d"; x.lineWidth=1;
+  for(let yy=20;yy<h;yy+=30){x.beginPath();x.moveTo(0,yy+.5);x.lineTo(w,yy+.5);x.stroke()}
+  if(data.length<2)return;
+  const max = id==="cpuGraph"||id==="memGraph" ? 100 : Math.max(1, ...data)*1.15;
+  x.strokeStyle=color;x.lineWidth=2;x.beginPath();
+  data.forEach((v,i)=>{
+    const px=i*(w-2)/(MAX-1)+1;
+    const py=h-5-(Math.max(0,v)/max)*(h-10);
+    i?x.lineTo(px,py):x.moveTo(px,py);
+  });
+  x.stroke();
+}
+function renderGraphs(){
+  draw("cpuGraph",hist.cpu,"#79e2df");
+  draw("memGraph",hist.mem,"#79e2df");
+  draw("rxGraph",hist.rx,"#9ee493");
+  draw("txGraph",hist.tx,"#e4df86");
+}
+function setText(id,v){$(id).textContent=v==null||v===""?"--":v}
+
+function renderSystem(d){
+  const cpu=d.cpu||{}, mem=d.memory||{}, disk=d.disk||{}, bat=d.battery||{};
+  const cpuPct=num(cpu.usage_percent), memPct=num(mem.usage_percent), diskPct=num(disk.usage_percent);
+  setText("cpuPct",cpuPct==null?"--%":cpuPct.toFixed(0)+"%");
+  setText("cores",cpu.cores); setText("threads",cpu.threads);
+  setText("memPct",memPct==null?"--%":memPct.toFixed(0)+"%");
+  setText("memUsed",mem.used_gb!=null?Number(mem.used_gb).toFixed(2)+" GiB":null);
+  setText("memTotal",mem.total_gb!=null?Number(mem.total_gb).toFixed(2)+" GiB":null);
+  const free = mem.total_gb!=null&&mem.used_gb!=null ? Number(mem.total_gb)-Number(mem.used_gb):null;
+  setText("memFree",free==null?null:free.toFixed(2)+" GiB");
+  setText("diskUsed",disk.used_gb!=null?Number(disk.used_gb).toFixed(2)+" GiB":null);
+  setText("diskTotal",disk.total_gb!=null?Number(disk.total_gb).toFixed(2)+" GiB":null);
+  const df = disk.total_gb!=null&&disk.used_gb!=null ? Number(disk.total_gb)-Number(disk.used_gb):null;
+  setText("diskFree",df==null?null:df.toFixed(2)+" GiB");
+  setText("diskPct",diskPct==null?"--%":diskPct.toFixed(0)+"%");
+  $("memBar").style.width=Math.max(0,Math.min(100,memPct||0))+"%";
+  $("diskBar").style.width=Math.max(0,Math.min(100,diskPct||0))+"%";
+
+  const temps=d.temperature||{};
+  const vals=Object.entries(temps);
+  $("tempRows").innerHTML=vals.length
+    ? vals.map(([k,v])=>`<div class="row"><span>${escapeHtml(k).toUpperCase()}</span><span>${escapeHtml(String(v))} °C</span></div>`).join("")
+    : `<div class="row"><span>SYSTEM</span><span>--</span></div>`;
+
+  const mainTemp=vals.length?num(vals[0][1]):null;
+  setText("cpuTemp",mainTemp==null?"--":mainTemp.toFixed(1)+" °C");
+  setText("uptime",fmtUptime(num(d.uptime_seconds)));
+  setText("sysUptime",fmtUptime(num(d.uptime_seconds)));
+  setText("host",d.hostname); setText("os",d.os);
+  setText("kernel",d.kernel);
+
+  const bp=num(bat.percent);
+  $("battery").textContent="BAT "+(bp==null?"--":bp.toFixed(0))+"%";
+  setText("batDetail",bp==null?"--":bp.toFixed(0)+"%");
+  setText("power",bat.charging==null?"--":bat.charging?"CHARGING":"DISCHARGING");
+
+  push(hist.cpu,cpuPct??0); push(hist.mem,memPct??0);
+
+  const n=d.network||{};
+  const now=performance.now();
+  if(lastNet && lastTime){
+    const dt=(now-lastTime)/1000;
+    if(dt>0){
+      const rx=Math.max(0,(Number(n.bytes_received||0)-lastNet.rx)/dt);
+      const tx=Math.max(0,(Number(n.bytes_sent||0)-lastNet.tx)/dt);
+      push(hist.rx,rx/1024); push(hist.tx,tx/1024);
+      $("rxRate").textContent=fmtBytes(rx);
+      $("txRate").textContent=fmtBytes(tx);
+    }
+  }
+  lastNet={rx:Number(n.bytes_received||0),tx:Number(n.bytes_sent||0)};
+  lastTime=now;
+  renderGraphs();
+}
+
+async function fetchJson(url){
+  const r=await fetch(url,{cache:"no-store"});
+  if(!r.ok)throw new Error(url+" "+r.status);
+  return r.json();
+}
+
+function renderProcesses(data){
+  let list = Array.isArray(data) ? data : (data?.processes || []);
+  if(!Array.isArray(list)) list=[];
+  list=list.slice().sort((a,b)=>(Number(b.cpu_percent??b.cpu??0)-Number(a.cpu_percent??a.cpu??0)));
+  const box=$("processList");
+  if(!list.length){
+    box.innerHTML='<div class="empty">No process data returned by API.</div>';
+    return;
+  }
+  box.innerHTML=list.slice(0,100).map(p=>{
+    const pid=p.pid??"--", name=p.name??p.program??"--", user=p.username??p.user??"--";
+    const cpu=num(p.cpu_percent??p.cpu), mem=num(p.memory_percent??p.mem_percent??p.mem);
+    return `<div class="proc-row">
+      <span class="pid">${escapeHtml(String(pid))}</span>
+      <span class="name" title="${escapeHtml(String(name))}">${escapeHtml(String(name))}</span>
+      <span class="user">${escapeHtml(String(user))}</span>
+      <span class="cpu">${cpu==null?"--":cpu.toFixed(1)}</span>
+      <span class="mem">${mem==null?"--":mem.toFixed(1)}</span>
+    </div>`;
+  }).join("");
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function refresh(){
+  try{
+    const data=await fetchJson("/api/system");
+    renderSystem(data);
+    $("status").innerHTML='<b>●</b> ONLINE';
+    $("status").querySelector("b").style.color="var(--green)";
+    try{
+      const p=await fetchJson("/api/processes");
+      renderProcesses(p);
+    }catch(e){
+      if(data.processes) renderProcesses(data.processes);
+    }
+  }catch(e){
+    $("status").innerHTML='<b class="bad">●</b> OFFLINE';
+  }
+}
+function clock(){
+  const d=new Date();
+  $("clock").textContent=d.toLocaleTimeString([], {hour12:false});
+}
+setInterval(clock,1000); clock();
+setInterval(refresh,1000); refresh();
+window.addEventListener("resize",renderGraphs);
+</script>
+</body>
+</html>

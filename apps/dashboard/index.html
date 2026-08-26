@@ -1,108 +1,345 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SircuitLab</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SircuitLab</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #111827;
-            color: white;
-            padding: 20px;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        h1 {
-            margin-bottom: 5px;
-        }
+body {
+    margin: 0;
+    background: #070a0d;
+    color: #d7e1e8;
+    font-family: "Courier New", monospace;
+    padding: 18px;
+}
 
-        .subtitle {
-            color: #9ca3af;
-            margin-bottom: 25px;
-        }
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
 
-        .card {
-            background: #1f2937;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
+.header {
+    border: 1px solid #26343d;
+    background: #080c10;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 0 12px rgba(0, 220, 255, 0.08);
+}
 
-        .status {
-            font-size: 22px;
-            font-weight: bold;
-        }
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
 
-        .online {
-            color: #22c55e;
-        }
+.logo {
+    color: #00e5ff;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
 
-        .offline {
-            color: #ef4444;
-        }
-    </style>
+.online {
+    color: #00ff9d;
+    font-size: 14px;
+}
+
+.online-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    background: #00ff9d;
+    border-radius: 50%;
+    margin-right: 7px;
+    box-shadow: 0 0 10px #00ff9d;
+}
+
+.clock {
+    color: #65727c;
+    font-size: 14px;
+}
+
+.subtitle {
+    color: #697780;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.section-title {
+    color: #00e5ff;
+    margin: 25px 0 12px;
+    font-size: 15px;
+    letter-spacing: 2px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.card {
+    position: relative;
+    min-height: 150px;
+    border: 1px solid #26343d;
+    background: #090d11;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: 0.2s ease;
+    overflow: hidden;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: #00e5ff;
+    opacity: 0.8;
+}
+
+.card:hover {
+    border-color: #00e5ff;
+    transform: translateY(-2px);
+    box-shadow:
+        0 0 12px rgba(0, 229, 255, 0.15),
+        inset 0 0 15px rgba(0, 229, 255, 0.03);
+}
+
+.card-title {
+    color: #00e5ff;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.card-description {
+    color: #71808a;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.status {
+    margin-top: 18px;
+    font-size: 12px;
+}
+
+.green {
+    color: #00ff9d;
+}
+
+.yellow {
+    color: #ffe600;
+}
+
+.purple {
+    color: #c084ff;
+}
+
+.blue {
+    color: #00bfff;
+}
+
+.footer {
+    margin-top: 18px;
+    border: 1px solid #26343d;
+    background: #080c10;
+    padding: 15px 18px;
+    color: #59666f;
+    font-size: 12px;
+}
+
+.footer span {
+    color: #00ff9d;
+}
+
+@media (max-width: 650px) {
+    body {
+        padding: 10px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-top {
+        align-items: flex-start;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .clock {
+        font-size: 11px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-    <h1>⚡ SircuitLab</h1>
-    <div class="subtitle">Home Server Dashboard</div>
+<div class="container">
 
-    <div class="card">
-        <h2>Server</h2>
-        <div id="serverStatus" class="status">Checking...</div>
+    <div class="header">
+        <div class="header-top">
+            <div>
+                <div class="logo">SIRCUITLAB</div>
+                <div class="subtitle">HOME SERVER CONTROL SYSTEM</div>
+            </div>
+
+            <div>
+                <div class="online">
+                    <span class="online-dot"></span>
+                    ONLINE
+                </div>
+                <div class="clock" id="clock">00:00:00</div>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>API</h2>
-        <div id="apiStatus" class="status">Checking...</div>
+    <div class="section-title">[ SYSTEM ]</div>
+
+    <div class="grid">
+
+        <a class="card" href="/system.html">
+            <div class="card-title">SYSTEM MONITOR</div>
+            <div class="card-description">
+                Real-time system telemetry inspired by btop.
+                CPU, memory, storage, battery, temperature
+                and network monitoring.
+            </div>
+
+            <div class="status green">
+                ● LIVE MONITOR
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">DOCKER</div>
+            <div class="card-description">
+                Monitor containers, images, ports and
+                container resource usage.
+            </div>
+
+            <div class="status blue">
+                ◉ CONTAINER CONTROL
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">STORAGE</div>
+            <div class="card-description">
+                Disk usage, partitions, mounted drives
+                and storage health.
+            </div>
+
+            <div class="status purple">
+                ◆ STORAGE SYSTEM
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">DATABASE</div>
+            <div class="card-description">
+                PostgreSQL status, database information
+                and future database controls.
+            </div>
+
+            <div class="status green">
+                ● POSTGRESQL
+            </div>
+        </a>
+
     </div>
+
+    <div class="section-title">[ SERVICES ]</div>
+
+    <div class="grid">
+
+        <a class="card" href="#">
+            <div class="card-title">NETWORK</div>
+            <div class="card-description">
+                Network interfaces, traffic statistics,
+                connectivity and network services.
+            </div>
+
+            <div class="status blue">
+                ↑↓ NETWORK
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">AI STUDIO</div>
+            <div class="card-description">
+                Local AI models, inference services
+                and future automation controls.
+            </div>
+
+            <div class="status green">
+                ◉ AI SERVICES
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">HARDWARE</div>
+            <div class="card-description">
+                Hardware sensors, CPU information,
+                temperatures and system devices.
+            </div>
+
+            <div class="status yellow">
+                ⚡ HARDWARE
+            </div>
+        </a>
+
+        <a class="card" href="#">
+            <div class="card-title">SETTINGS</div>
+            <div class="card-description">
+                SircuitLab configuration, services,
+                system preferences and administration.
+            </div>
+
+            <div class="status">
+                ⚙ CONFIGURATION
+            </div>
+        </a>
+
+    </div>
+
+    <div class="footer">
+        <span>●</span> SircuitLab Home Server
+        &nbsp; | &nbsp;
+        Cyberpunk Control Interface
+    </div>
+
+</div>
 
 <script>
 
-async function checkServer() {
-    try {
-        const response = await fetch("/api/health");
+function updateClock() {
+    const now = new Date();
 
-        if (!response.ok) {
-            throw new Error("API error");
-        }
+    const time =
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0") + ":" +
+        String(now.getSeconds()).padStart(2, "0");
 
-        const data = await response.json();
-
-        document.getElementById("serverStatus").innerHTML =
-            "🟢 " + data.status;
-
-        document.getElementById("serverStatus").className =
-            "status online";
-
-        document.getElementById("apiStatus").innerHTML =
-            "🟢 Online";
-
-        document.getElementById("apiStatus").className =
-            "status online";
-
-    } catch (error) {
-
-        document.getElementById("serverStatus").innerHTML =
-            "🔴 Offline";
-
-        document.getElementById("serverStatus").className =
-            "status offline";
-
-        document.getElementById("apiStatus").innerHTML =
-            "🔴 Offline";
-
-        document.getElementById("apiStatus").className =
-            "status offline";
-    }
+    document.getElementById("clock").textContent = time;
 }
 
-checkServer();
-
-setInterval(checkServer, 10000);
+setInterval(updateClock, 1000);
+updateClock();
 
 </script>
 
