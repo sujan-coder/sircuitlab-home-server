@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SircuitLab — Power Control</title>
+
+<style>
+
+:root {
+    --black: #000000;
+    --panel: #050505;
+    --panel2: #080808;
+
+    --orange: #ff9d00;
+    --orange-dim: #a86700;
+
+    --green: #5fd787;
+    --green-bright: #00ff88;
+
+    --yellow: #d7d75f;
+    --red: #d75f5f;
+
+    --blue: #5fafd7;
+    --magenta: #d787d7;
+
+    --white: #eeeeee;
+    --text: #c5c5c5;
+    --muted: #777777;
+    --dim: #454545;
+
+    --border: #202020;
+    --border-light: #303030;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+
+    background: #000000;
+
+    color: var(--text);
+
+    font-family:
+        "JetBrains Mono",
+        "DejaVu Sans Mono",
+        "Cascadia Code",
+        Consolas,
+        monospace;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: .12;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 32px 32px;
+}
+
+.page {
+    width: min(1180px, calc(100% - 24px));
+
+    margin: 0 auto;
+
+    padding: 14px 0 30px;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+
+    min-height: 72px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 14px 18px;
+
+    border: 1px solid var(--border-light);
+
+    background: #000000;
+
+    position: relative;
+}
+
+.header::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 32%;
+
+    height: 2px;
+
+    background: var(--orange);
+
+    box-shadow:
+        0 0 10px rgba(255,157,0,.55);
+}
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+.brand-icon {
+
+    width: 40px;
+    height: 40px;
+
+    display: grid;
+
+    place-items: center;
+
+    border: 1px solid var(--orange);
+
+    color: var(--orange);
+
+    font-size: 21px;
+}
+
+.brand-name {
+
+    color: var(--orange);
+
+    font-size: 1.15rem;
+
+    font-weight: 700;
+}
+
+.brand-subtitle {
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: .54rem;
+
+    letter-spacing: .08em;
+}
+
+.header-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: var(--yellow);
+
+    font-size: .58rem;
+
+    font-weight: 700;
+}
+
+.status-dot {
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+.nav {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin: 12px 2px 15px;
+
+    color: var(--muted);
+
+    font-size: .58rem;
+}
+
+.nav .current {
+    color: var(--orange);
+}
+
+.nav .separator {
+    color: var(--dim);
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.title-panel {
+
+    border: 1px solid var(--border);
+
+    background: #000000;
+
+    padding: 15px 17px;
+}
+
+.title-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+.title {
+
+    color: var(--white);
+
+    font-size: 1.3rem;
+
+    font-weight: 700;
+}
+
+.title span {
+    color: var(--orange);
+}
+
+.title-meta {
+
+    color: var(--muted);
+
+    font-size: .56rem;
+}
+
+.description {
+
+    margin-top: 6px;
+
+    color: #686868;
+
+    font-size: .59rem;
+}
+
+.command-line {
+
+    margin-top: 11px;
+
+    padding-top: 9px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--muted);
+
+    font-size: .56rem;
+}
+
+.command-line strong {
+    color: var(--green);
+}
+
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+.section {
+    margin-top: 13px;
+}
+
+.section-header {
+
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--border);
+
+    background: #030303;
+}
+
+.section-title {
+
+    color: var(--orange);
+
+    font-size: .59rem;
+
+    font-weight: 700;
+}
+
+.section-info {
+
+    margin-left: auto;
+
+    color: var(--dim);
+
+    font-size: .48rem;
+}
+
+
+/* =====================================================
+   SYSTEM METRICS
+===================================================== */
+
+.system-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    border-left: 1px solid var(--border);
+
+    border-bottom: 1px solid var(--border);
+}
+
+.metric {
+
+    min-height: 68px;
+
+    padding: 10px 12px;
+
+    border-right: 1px solid var(--border);
+
+    background: #000000;
+}
+
+.metric-label {
+
+    color: var(--muted);
+
+    font-size: .46rem;
+}
+
+.metric-value {
+
+    margin-top: 8px;
+
+    color: var(--white);
+
+    font-size: .75rem;
+
+    font-weight: 700;
+}
+
+.metric-value.orange {
+    color: var(--orange);
+}
+
+.metric-value.green {
+    color: var(--green);
+}
+
+.metric-value.yellow {
+    color: var(--yellow);
+}
+
+.metric-small {
+
+    margin-top: 4px;
+
+    color: var(--dim);
+
+    font-size: .45rem;
+}
+
+
+/* =====================================================
+   POWER GRID
+===================================================== */
+
+.power-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 9px;
+}
+
+
+/* =====================================================
+   POWER CARD
+===================================================== */
+
+.power-card {
+
+    position: relative;
+
+    border: 1px solid var(--border-light);
+
+    background: #000000;
+
+    min-height: 235px;
+
+    transition:
+        border-color .12s ease,
+        background .12s ease;
+}
+
+.power-card:hover {
+
+    border-color: #3a3a3a;
+
+    background: #030303;
+}
+
+.power-card.active {
+
+    border-color:
+        rgba(95,215,135,.45);
+}
+
+.power-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 2px;
+
+    background: var(--orange);
+}
+
+.power-card.active::before {
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 10px rgba(95,215,135,.5);
+}
+
+
+/* =====================================================
+   CARD HEADER
+===================================================== */
+
+.power-head {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 11px 13px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.power-number {
+
+    color: var(--dim);
+
+    font-size: .47rem;
+}
+
+.power-name {
+
+    margin-top: 4px;
+
+    color: var(--white);
+
+    font-size: .72rem;
+
+    font-weight: 700;
+}
+
+.power-state {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: .49rem;
+
+    font-weight: 700;
+}
+
+.power-state.off {
+    color: var(--red);
+}
+
+.power-state.on {
+    color: var(--green);
+}
+
+.state-dot {
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+
+/* =====================================================
+   CARD BODY
+===================================================== */
+
+.power-body {
+
+    padding: 13px;
+}
+
+.output {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+.power-symbol {
+
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+
+    place-items: center;
+
+    border: 1px solid var(--orange);
+
+    color: var(--orange);
+
+    font-size: 1.4rem;
+}
+
+.power-card.active .power-symbol {
+
+    border-color: var(--green);
+
+    color: var(--green);
+
+    box-shadow:
+        0 0 12px rgba(95,215,135,.12);
+}
+
+.output-label {
+
+    color: var(--muted);
+
+    font-size: .47rem;
+}
+
+.output-state {
+
+    margin-top: 4px;
+
+    color: var(--red);
+
+    font-size: .95rem;
+
+    font-weight: 800;
+}
+
+.power-card.active .output-state {
+    color: var(--green);
+}
+
+.output-detail {
+
+    margin-top: 4px;
+
+    color: var(--dim);
+
+    font-size: .46rem;
+}
+
+
+/* =====================================================
+   CONTROLS
+===================================================== */
+
+.control-label {
+
+    margin-bottom: 6px;
+
+    color: var(--muted);
+
+    font-size: .46rem;
+}
+
+.controls {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 6px;
+}
+
+.power-btn {
+
+    height: 34px;
+
+    border: 1px solid var(--border-light);
+
+    background: #020202;
+
+    color: var(--muted);
+
+    font-family: inherit;
+
+    font-size: .55rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        border-color .1s ease,
+        color .1s ease,
+        background .1s ease;
+}
+
+.power-btn.on:hover,
+.power-btn.on.selected {
+
+    border-color: var(--green);
+
+    color: var(--green);
+
+    background:
+        rgba(95,215,135,.055);
+}
+
+.power-btn.off:hover,
+.power-btn.off.selected {
+
+    border-color: var(--red);
+
+    color: var(--red);
+
+    background:
+        rgba(215,95,95,.055);
+}
+
+
+/* =====================================================
+   DEVICE FOOTER
+===================================================== */
+
+.device-footer {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 12px;
+
+    padding-top: 8px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--dim);
+
+    font-size: .44rem;
+}
+
+.device-footer span:last-child {
+    color: var(--yellow);
+}
+
+
+/* =====================================================
+   LOG
+===================================================== */
+
+.log {
+
+    border: 1px solid var(--border);
+
+    background: #000000;
+}
+
+.log-row {
+
+    display: grid;
+
+    grid-template-columns:
+        72px
+        65px
+        1fr;
+
+    align-items: center;
+
+    min-height: 30px;
+
+    padding: 0 10px;
+
+    border-bottom: 1px solid #0d0d0d;
+
+    font-size: .48rem;
+}
+
+.log-row:last-child {
+    border-bottom: 0;
+}
+
+.log-time {
+    color: var(--dim);
+}
+
+.log-type {
+    color: var(--orange);
+}
+
+.log-message {
+    color: #737373;
+}
+
+.log-message.success {
+    color: var(--green);
+}
+
+.log-message.warning {
+    color: var(--yellow);
+}
+
+
+/* =====================================================
+   SAFETY
+===================================================== */
+
+.safety {
+
+    padding: 11px 13px;
+
+    border: 1px solid rgba(215,215,95,.25);
+
+    background: #020200;
+}
+
+.safety-title {
+
+    color: var(--yellow);
+
+    font-size: .54rem;
+
+    font-weight: 700;
+}
+
+.safety-text {
+
+    margin-top: 5px;
+
+    color: #676767;
+
+    font-size: .47rem;
+
+    line-height: 1.55;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 18px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--dim);
+
+    font-size: .47rem;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 760px) {
+
+    .page {
+        width: calc(100% - 12px);
+    }
+
+    .header-status {
+        display: none;
+    }
+
+    .system-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .metric:nth-child(2) {
+        border-right: 0;
+    }
+
+    .metric:nth-child(-n+2) {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .power-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 450px) {
+
+    .title-row {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .title-meta {
+        display: none;
+    }
+
+    .power-card {
+        min-height: 225px;
+    }
+
+    .log-row {
+        grid-template-columns:
+            60px
+            55px
+            1fr;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="page">
+
+
+<!-- HEADER -->
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            ⏻
+        </div>
+
+        <div>
+
+            <div class="brand-name">
+                SircuitLab
+            </div>
+
+            <div class="brand-subtitle">
+                HOME SERVER / POWER CONTROL
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="header-status">
+
+        <span class="status-dot"></span>
+
+        CONTROLLER OFFLINE
+
+    </div>
+
+</header>
+
+
+<!-- NAVIGATION -->
+
+<div class="nav">
+
+    <span>SircuitLab</span>
+
+    <div class="separator">/</div>
+
+    <span>Lab Control</span>
+
+    <div class="separator">/</div>
+
+    <span class="current">Power Control</span>
+
+</div>
+
+
+<!-- TITLE -->
+
+<section class="title-panel">
+
+    <div class="title-row">
+
+        <div>
+
+            <div class="title">
+                POWER <span>CONTROL</span>
+            </div>
+
+            <div class="description">
+                Physical power switching and output control
+            </div>
+
+        </div>
+
+        <div class="title-meta">
+            ESP32-LAB-01
+        </div>
+
+    </div>
+
+
+    <div class="command-line">
+
+        &gt; subsystem:
+        <strong>READY</strong>
+
+        &nbsp;&nbsp;
+
+        controller:
+        <strong>OFFLINE</strong>
+
+    </div>
+
+</section>
+
+
+<!-- SYSTEM STATUS -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div class="section-title">
+            SYSTEM STATUS
+        </div>
+
+        <div class="section-info">
+            POWER SUBSYSTEM
+        </div>
+
+    </div>
+
+
+    <div class="system-grid">
+
+
+        <div class="metric">
+
+            <div class="metric-label">
+                CONTROLLER
+            </div>
+
+            <div class="metric-value yellow">
+                OFFLINE
+            </div>
+
+            <div class="metric-small">
+                ESP32-LAB-01
+            </div>
+
+        </div>
+
+
+        <div class="metric">
+
+            <div class="metric-label">
+                MQTT
+            </div>
+
+            <div class="metric-value yellow">
+                OFFLINE
+            </div>
+
+            <div class="metric-small">
+                NOT CONNECTED
+            </div>
+
+        </div>
+
+
+        <div class="metric">
+
+            <div class="metric-label">
+                OUTPUTS
+            </div>
+
+            <div class="metric-value orange">
+                0 / 2
+            </div>
+
+            <div class="metric-small">
+                ACTIVE
+            </div>
+
+        </div>
+
+
+        <div class="metric">
+
+            <div class="metric-label">
+                SAFETY
+            </div>
+
+            <div class="metric-value green">
+                READY
+            </div>
+
+            <div class="metric-small">
+                LOCAL CONTROL
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- POWER OUTPUTS -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div class="section-title">
+            POWER OUTPUTS
+        </div>
+
+        <div class="section-info">
+            2 CHANNELS
+        </div>
+
+    </div>
+
+
+    <div class="power-grid">
+
+
+        <!-- SWITCH 01 -->
+
+        <div
+            class="power-card"
+            id="switchCard1"
+        >
+
+            <div class="power-head">
+
+                <div>
+
+                    <div class="power-number">
+                        OUTPUT 01
+                    </div>
+
+                    <div class="power-name">
+                        SWITCH 01
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="power-state off"
+                    id="stateIndicator1"
+                >
+
+                    <span class="state-dot"></span>
+
+                    OFF
+
+                </div>
+
+            </div>
+
+
+            <div class="power-body">
+
+
+                <div class="output">
+
+                    <div class="power-symbol">
+                        ⏻
+                    </div>
+
+
+                    <div>
+
+                        <div class="output-label">
+                            CURRENT STATE
+                        </div>
+
+                        <div
+                            class="output-state"
+                            id="stateText1"
+                        >
+                            OFF
+                        </div>
+
+                        <div
+                            class="output-detail"
+                            id="detailText1"
+                        >
+                            No controller feedback
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="control-label">
+                    POWER COMMAND
+                </div>
+
+
+                <div class="controls">
+
+                    <button
+                        class="power-btn on"
+                        onclick="setSwitch(1, true)"
+                    >
+                        [ ON ]
+                    </button>
+
+
+                    <button
+                        class="power-btn off selected"
+                        onclick="setSwitch(1, false)"
+                    >
+                        [ OFF ]
+                    </button>
+
+                </div>
+
+
+                <div class="device-footer">
+
+                    <span>
+                        CHANNEL 01
+                    </span>
+
+                    <span>
+                        COMMAND READY
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SWITCH 02 -->
+
+        <div
+            class="power-card"
+            id="switchCard2"
+        >
+
+            <div class="power-head">
+
+                <div>
+
+                    <div class="power-number">
+                        OUTPUT 02
+                    </div>
+
+                    <div class="power-name">
+                        SWITCH 02
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="power-state off"
+                    id="stateIndicator2"
+                >
+
+                    <span class="state-dot"></span>
+
+                    OFF
+
+                </div>
+
+            </div>
+
+
+            <div class="power-body">
+
+
+                <div class="output">
+
+                    <div class="power-symbol">
+                        ⏻
+                    </div>
+
+
+                    <div>
+
+                        <div class="output-label">
+                            CURRENT STATE
+                        </div>
+
+                        <div
+                            class="output-state"
+                            id="stateText2"
+                        >
+                            OFF
+                        </div>
+
+                        <div
+                            class="output-detail"
+                            id="detailText2"
+                        >
+                            No controller feedback
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="control-label">
+                    POWER COMMAND
+                </div>
+
+
+                <div class="controls">
+
+                    <button
+                        class="power-btn on"
+                        onclick="setSwitch(2, true)"
+                    >
+                        [ ON ]
+                    </button>
+
+
+                    <button
+                        class="power-btn off selected"
+                        onclick="setSwitch(2, false)"
+                    >
+                        [ OFF ]
+                    </button>
+
+                </div>
+
+
+                <div class="device-footer">
+
+                    <span>
+                        CHANNEL 02
+                    </span>
+
+                    <span>
+                        COMMAND READY
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- CONTROL LOG -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div class="section-title">
+            CONTROL LOG
+        </div>
+
+        <div class="section-info">
+            RECENT EVENTS
+        </div>
+
+    </div>
+
+
+    <div
+        class="log"
+        id="eventLog"
+    >
+
+        <div class="log-row">
+
+            <div class="log-time">
+                --:--:--
+            </div>
+
+            <div class="log-type">
+                SYSTEM
+            </div>
+
+            <div class="log-message">
+                Power control interface initialized
+            </div>
+
+        </div>
+
+
+        <div class="log-row">
+
+            <div class="log-time">
+                --:--:--
+            </div>
+
+            <div class="log-type">
+                MQTT
+            </div>
+
+            <div class="log-message warning">
+                Controller connection unavailable
+            </div>
+
+        </div>
+
+
+        <div class="log-row">
+
+            <div class="log-time">
+                --:--:--
+            </div>
+
+            <div class="log-type">
+                SAFETY
+            </div>
+
+            <div class="log-message success">
+                Outputs initialized to OFF
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SAFETY -->
+
+<section class="section">
+
+    <div class="safety">
+
+        <div class="safety-title">
+            ⚠ SAFETY STATUS
+        </div>
+
+        <div class="safety-text">
+
+            Physical switching is controlled through the
+            connected ESP32 controller. Until controller
+            feedback is available, displayed output states
+            represent commanded states only.
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer class="footer">
+
+    <span>
+        SircuitLab Power Control
+    </span>
+
+    <span>
+        © 2026
+    </span>
+
+</footer>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   CLOCK
+===================================================== */
+
+function updateClock() {
+
+    const now = new Date();
+
+    const time =
+        now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+
+    const clock =
+        document.getElementById("clock");
+
+    if (clock) {
+        clock.textContent = time;
+    }
+}
+
+
+/* =====================================================
+   SWITCH CONTROL
+===================================================== */
+
+const switchStates = {
+    1: false,
+    2: false
+};
+
+
+function setSwitch(number, state) {
+
+    switchStates[number] = state;
+
+
+    const card =
+        document.getElementById(
+            "switchCard" + number
+        );
+
+    const stateText =
+        document.getElementById(
+            "stateText" + number
+        );
+
+    const indicator =
+        document.getElementById(
+            "stateIndicator" + number
+        );
+
+    const detail =
+        document.getElementById(
+            "detailText" + number
+        );
+
+
+    if (state) {
+
+        card.classList.add("active");
+
+        stateText.textContent = "ON";
+
+        indicator.className =
+            "power-state on";
+
+        indicator.innerHTML =
+            '<span class="state-dot"></span> ON';
+
+        detail.textContent =
+            "ON command selected";
+
+    } else {
+
+        card.classList.remove("active");
+
+        stateText.textContent = "OFF";
+
+        indicator.className =
+            "power-state off";
+
+        indicator.innerHTML =
+            '<span class="state-dot"></span> OFF';
+
+        detail.textContent =
+            "OFF command selected";
+    }
+
+
+    const buttons =
+        card.querySelectorAll(".power-btn");
+
+
+    buttons.forEach(button => {
+
+        button.classList.remove(
+            "selected"
+        );
+
+    });
+
+
+    if (state) {
+
+        buttons[0].classList.add(
+            "selected"
+        );
+
+    } else {
+
+        buttons[1].classList.add(
+            "selected"
+        );
+
+    }
+
+
+    addLog(
+        state ? "ON" : "OFF",
+        "SWITCH " +
+        String(number).padStart(2, "0") +
+        " command selected"
+    );
+}
+
+
+/* =====================================================
+   EVENT LOG
+===================================================== */
+
+function addLog(type, message) {
+
+    const log =
+        document.getElementById(
+            "eventLog"
+        );
+
+    const now = new Date();
+
+    const time =
+        now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+
+
+    const row =
+        document.createElement("div");
+
+    row.className = "log-row";
+
+
+    const timeEl =
+        document.createElement("div");
+
+    timeEl.className = "log-time";
+
+    timeEl.textContent = time;
+
+
+    const typeEl =
+        document.createElement("div");
+
+    typeEl.className = "log-type";
+
+    typeEl.textContent = type;
+
+
+    const messageEl =
+        document.createElement("div");
+
+    messageEl.className =
+        "log-message";
+
+    messageEl.textContent =
+        message;
+
+
+    row.appendChild(timeEl);
+    row.appendChild(typeEl);
+    row.appendChild(messageEl);
+
+
+    log.prepend(row);
+
+
+    while (log.children.length > 8) {
+
+        log.removeChild(
+            log.lastElementChild
+        );
+    }
+}
+
+</script>
+
+</body>
+</html>

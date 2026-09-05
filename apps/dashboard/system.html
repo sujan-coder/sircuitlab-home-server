@@ -85,10 +85,26 @@ button,select{font:inherit;color:inherit}
   width:100%;
   height:170px;
   display:block;
-  background:#000;
+  background:#020706;
   border:1px solid var(--line2);
+  box-shadow:
+    inset 0 0 18px rgba(80,220,210,.025),
+    0 0 8px rgba(80,220,210,.025);
 }
-.graph.small{height:115px}
+.graph.small{
+  height:115px;
+}
+.net-graph{
+  height:170px;
+  width:100%;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.net-graph canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
 .rows{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-top:8px}
 .row{
   display:grid;
@@ -105,13 +121,135 @@ button,select{font:inherit;color:inherit}
 }
 .progress i{display:block;height:100%;background:var(--green);width:0%}
 .progress.mem i{background:var(--cyan)}
-.progress.disk i{background:var(--purple)}
+.progress.disk i{background:var(--orange)}
+
+/* STORAGE */
+.storage-panel{
+  position:relative;
+}
+
+.storage-panel .panel-title{
+  color:var(--cyan);
+  text-shadow:0 0 7px rgba(121,226,223,.18);
+}
+
+.storage-panel .panel-title .num{
+  color:var(--yellow);
+}
+
+.storage-panel .metric{
+  border-color:var(--line2);
+  background:rgba(5,12,11,.22);
+}
+
+.storage-panel .metric .label{
+  color:var(--muted);
+}
+
+.storage-panel .metric .value{
+  color:var(--cyan);
+  text-shadow:0 0 7px rgba(121,226,223,.12);
+}
+
+.storage-panel .progress{
+  border-color:var(--line2);
+  background:#020706;
+  box-shadow:inset 0 0 8px rgba(80,220,210,.025);
+}
+
+.storage-panel .progress i{
+  background:var(--green);
+  box-shadow:0 0 7px rgba(158,228,147,.25);
+}
+
+.storage-panel .storage-list{
+  margin-top:12px;
+  border:1px solid var(--line2);
+  background:rgba(3,9,8,.28);
+  overflow:hidden;
+  box-shadow:inset 0 0 14px rgba(80,220,210,.018);
+}
+
+.storage-panel .storage-head,
+.storage-panel .storage-row{
+  display:grid;
+  grid-template-columns:
+    minmax(120px,1.4fr)
+    minmax(60px,.7fr)
+    55px
+    minmax(75px,.8fr)
+    minmax(75px,.8fr)
+    55px;
+  gap:8px;
+  align-items:center;
+  padding:7px 9px;
+  min-width:0;
+}
+
+.storage-panel .storage-head{
+  color:var(--muted);
+  border-bottom:1px solid var(--line2);
+  background:rgba(10,20,18,.35);
+  font-size:11px;
+  letter-spacing:.08em;
+}
+
+.storage-panel .storage-row{
+  border-bottom:1px dotted #1e2825;
+  font-size:12px;
+  transition:
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+.storage-panel .storage-row:hover{
+  background:rgba(121,226,223,.025);
+  box-shadow:inset 2px 0 0 rgba(121,226,223,.35);
+}
+
+.storage-panel .storage-row:last-child{
+  border-bottom:0;
+}
+
+.storage-panel .storage-device{
+  color:var(--cyan);
+  text-shadow:0 0 5px rgba(121,226,223,.10);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.storage-panel .storage-mount{
+  color:var(--green);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.storage-panel .storage-fs{
+  color:var(--yellow);
+}
+
+.storage-panel .storage-size{
+  color:var(--green);
+  text-align:right;
+  white-space:nowrap;
+}
+
+.storage-panel .storage-empty{
+  padding:10px;
+  color:var(--muted);
+}
+
+.storage-panel .storage-hot{
+  color:var(--red)!important;
+}
+
+
+
 .netgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .netbox{border:1px solid var(--line2);padding:8px}
-.netbox .big{font-size:19px;color:var(--cyan)}
-.proc-wrap{padding:0}
-.proc-head,.proc-row{
-  display:grid;
+.netbox .big{font-size:19px;color:var(--cyan);
   grid-template-columns:58px minmax(110px,1fr) 76px 68px 68px;
   gap:8px;
   align-items:center;
@@ -138,19 +276,691 @@ button,select{font:inherit;color:inherit}
   .layout{grid-template-columns:1fr}
   .metrics{grid-template-columns:1fr 1fr}
 }
-@media(max-width:560px){
-  .page{padding:8px}
-  .topbar{grid-template-columns:1fr auto;gap:6px}
-  .status{grid-column:1/-1;grid-row:2}
-  .clock{grid-column:2;grid-row:1}
-  .battery{grid-column:1;grid-row:1}
-  .metrics{grid-template-columns:1fr 1fr}
-  .rows{grid-template-columns:1fr}
-  .netgrid{grid-template-columns:1fr}
-  .proc-head,.proc-row{grid-template-columns:48px minmax(90px,1fr) 55px 58px}
-  .proc-head span:nth-child(4),.proc-row .user{display:none}
-  .proc-head span:nth-child(5){display:block}
+
+/* =========================
+   PROCESS TABLE — FIXED
+   ========================= */
+
+.proc-wrap{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
 }
+
+.proc-head,
+.proc-row{
+  display:grid;
+  grid-template-columns:
+    60px
+    minmax(180px, 1fr)
+    minmax(90px, .7fr)
+    65px
+    65px;
+  gap:8px;
+  align-items:center;
+  min-width:500px;
+}
+
+.proc-head{
+  padding:7px 9px;
+}
+
+.proc-row{
+  padding:5px 9px;
+}
+
+.proc-head span,
+.proc-row span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.proc-head span{
+  color:var(--muted);
+}
+
+.proc-row .pid{
+  color:var(--yellow);
+}
+
+.proc-row .name{
+  color:var(--text);
+}
+
+.proc-row .user{
+  color:var(--green);
+}
+
+.proc-row .cpu{
+  color:#f0c75e;
+}
+
+.proc-row .mem{
+  color:#9ee493;
+}
+
+/* =========================
+   GRAPH COLORS
+   ========================= */
+
+/* CPU = amber */
+.cpu-panel #cpuGraph{
+  border-color:var(--line2);
+}
+
+/* Memory = green */
+.memory-panel #memGraph{
+  border-color:var(--line2);
+}
+
+/* Network values follow their graph lines */
+.network-panel .rx{
+  color:#e4df86;
+  text-shadow:0 0 7px rgba(228,223,134,.15);
+}
+
+.network-panel .tx{
+  color:#d98cff;
+  text-shadow:0 0 7px rgba(217,140,255,.15);
+}
+
+/* =========================================================
+   MOBILE TABLE + GRAPH COLOR FIX
+   ========================================================= */
+
+/* Process table */
+.proc-wrap{
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.proc-head,
+.proc-row{
+  width:100%;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:55px minmax(0,2fr) minmax(70px,1fr) 58px 58px;
+  gap:8px;
+  align-items:center;
+}
+
+.proc-head > *,
+.proc-row > *{
+  min-width:0;
+}
+
+.proc-head span,
+.proc-row span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* Network values must match their graph lines */
+.network-panel .rx{
+  color:#e4df86;
+  text-shadow:0 0 7px rgba(228,223,134,.20);
+}
+
+.network-panel .tx{
+  color:#c792ea;
+  text-shadow:0 0 7px rgba(199,146,234,.20);
+}
+
+/* Different memory graph color */
+#memGraph{
+  filter:drop-shadow(0 0 3px rgba(255,126,185,.20));
+}
+
+/* Narrow screens */
+
+
+/* =========================
+   MOBILE LAYOUT
+   ========================= */
+@media (max-width: 560px){
+
+  html,
+  body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+
+  .page{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    padding:8px;
+  }
+
+  .layout{
+    width:100%;
+    max-width:100%;
+  }
+
+  .panel{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  .panel-body{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* TOP BAR */
+  .topbar{
+    grid-template-columns:1fr auto;
+    gap:6px;
+  }
+
+  .status{
+    grid-column:1/-1;
+    grid-row:2;
+  }
+
+  .clock{
+    grid-column:2;
+    grid-row:1;
+  }
+
+  .battery{
+    grid-column:1;
+    grid-row:1;
+  }
+
+  /* METRICS */
+  .metrics{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .metric{
+    min-width:0;
+    box-sizing:border-box;
+  }
+
+  .metric .value{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* GRAPHS */
+  .graph{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* SYSTEM ROWS */
+  .rows{
+    grid-template-columns:1fr;
+  }
+
+  .row{
+    min-width:0;
+  }
+
+  .row span:last-child{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* STORAGE */
+  .storage-panel .storage-head,
+  .storage-panel .storage-row{
+    grid-template-columns:
+      minmax(105px,1.5fr)
+      minmax(50px,.7fr)
+      48px
+      minmax(85px,1fr);
+    gap:6px;
+    padding-left:7px;
+    padding-right:7px;
+  }
+
+  .storage-panel .storage-head span:nth-child(5),
+  .storage-panel .storage-head span:nth-child(6),
+  .storage-panel .storage-row span:nth-child(5),
+  .storage-panel .storage-row span:nth-child(6){
+    display:none;
+  }
+
+  /* NETWORK */
+  .network-panel .metrics{
+    grid-template-columns:1fr 1fr;
+  }
+
+  /* PROCESS TABLE */
+  .proc-wrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+
+  .proc-head,
+  .proc-row{
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+
+    grid-template-columns:
+      42px
+      minmax(0,2fr)
+      minmax(52px,.9fr)
+      48px
+      48px;
+
+    gap:5px;
+    padding-left:6px;
+    padding-right:6px;
+  }
+
+  .proc-head{
+    font-size:10px;
+  }
+
+  .proc-row{
+    font-size:11px;
+  }
+
+  .proc-head span,
+  .proc-row span{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .proc-row .cpu,
+  .proc-row .mem{
+    text-align:right;
+  }
+
+}
+
+
+/* Align numeric process columns */
+.proc-head span:nth-child(4),
+.proc-head span:nth-child(5){
+  text-align:right;
+}
+
+.proc-row .cpu,
+.proc-row .mem{
+  text-align:right;
+}
+
+
+/* FINAL GRAPH / STORAGE COLOR OVERRIDES */
+.cpu-panel #cpuGraph{
+  filter:drop-shadow(0 0 4px rgba(255,92,92,.28));
+}
+
+.memory-panel #memGraph{
+  filter:drop-shadow(0 0 4px rgba(158,228,147,.25));
+}
+
+.storage-panel .progress.disk i,
+.storage-panel #diskBar{
+  background:linear-gradient(90deg,#9ee493 0%,#79e2df 100%) !important;
+  box-shadow:0 0 7px rgba(121,226,223,.25);
+}
+
+.network-panel .rx{
+  color:#e4df86 !important;
+  text-shadow:0 0 6px rgba(228,223,134,.18);
+}
+
+.network-panel .tx{
+  color:#c792ea !important;
+  text-shadow:0 0 6px rgba(199,146,234,.18);
+}
+
+
+/* ===== CLEAN RESPONSIVE LAYOUT ===== */
+html,body{
+  width:100%;
+  margin:0;
+  padding:0;
+}
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.page{
+  width:100%;
+  max-width:1500px;
+  margin:0 auto;
+  padding:12px;
+}
+.layout{
+  display:grid;
+  width:100%;
+  grid-template-columns:minmax(0,1.25fr) minmax(330px,.9fr);
+  gap:12px;
+}
+.left,.right{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:100%;
+  min-width:0;
+}
+.panel{
+  width:100%;
+  min-width:0;
+}
+@media(max-width:900px){
+  .page{
+    width:100%;
+    max-width:none;
+    padding:8px;
+  }
+  .layout{
+    width:100%;
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media(max-width:560px){
+  .page{
+    width:100%;
+    max-width:none;
+    padding:8px;
+  }
+  .layout,
+  .left,
+  .right,
+  .panel{
+    width:100%;
+    min-width:0;
+  }
+}
+/* ===== END CLEAN RESPONSIVE LAYOUT ===== */
+
+/* ===== FINAL RESPONSIVE FIX ===== */
+
+html,body{
+  width:100%;
+  max-width:100%;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+}
+
+.page{
+  width:100%;
+  max-width:1500px;
+  margin:0 auto;
+  padding:12px;
+  box-sizing:border-box;
+}
+
+.layout{
+  width:100%;
+  max-width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);
+  gap:12px;
+}
+
+.left,.right{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+
+.panel,
+.panel-body,
+.metrics,
+.graph,
+.net-graph,
+.storage-list,
+.proc-wrap{
+  min-width:0;
+  max-width:100%;
+}
+
+/* PROCESS TABLE */
+.proc-wrap{
+  width:100%;
+  overflow-x:auto;
+}
+
+.proc-head,
+.proc-row{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:
+    55px
+    minmax(0,2fr)
+    minmax(0,1fr)
+    58px
+    58px;
+  gap:8px;
+}
+
+.proc-head span,
+.proc-row span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* DESKTOP */
+@media (min-width:901px){
+  .page{
+    width:100%;
+    max-width:1500px;
+  }
+
+  .layout{
+    grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);
+  }
+
+  .metrics{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+
+/* TABLET + MOBILE */
+@media (max-width:900px){
+  .page{
+    width:100%;
+    max-width:none;
+    padding:8px;
+  }
+
+  .layout{
+    width:100%;
+    max-width:none;
+    grid-template-columns:minmax(0,1fr);
+  }
+
+  .left,.right{
+    width:100%;
+    min-width:0;
+  }
+
+  .metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+/* PHONE */
+@media (max-width:560px){
+  html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+
+  .page{
+    width:100%;
+    max-width:none;
+    padding:8px;
+  }
+
+  .layout,
+  .left,
+  .right,
+  .panel,
+  .panel-body{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+
+  .metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .rows{
+    grid-template-columns:1fr;
+  }
+
+  .netgrid{
+    grid-template-columns:1fr;
+  }
+
+  .proc-wrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+  }
+
+  .proc-head,
+  .proc-row{
+    width:100%;
+    min-width:0;
+    grid-template-columns:
+      42px
+      minmax(0,2fr)
+      minmax(0,.9fr)
+      48px
+      48px;
+    gap:5px;
+    padding-left:6px;
+    padding-right:6px;
+  }
+
+  .proc-head{
+    font-size:10px;
+  }
+
+  .proc-row{
+    font-size:11px;
+  }
+
+  .storage-panel .storage-head,
+  .storage-panel .storage-row{
+    width:100%;
+    min-width:0;
+    grid-template-columns:
+      minmax(0,1.5fr)
+      minmax(0,.7fr)
+      48px
+      minmax(0,1fr);
+  }
+
+  .storage-panel .storage-head span:nth-child(5),
+  .storage-panel .storage-head span:nth-child(6),
+  .storage-panel .storage-row span:nth-child(5),
+  .storage-panel .storage-row span:nth-child(6){
+    display:none;
+  }
+}
+
+/* ===== END FINAL RESPONSIVE FIX ===== */
+
+
+/* ===== SIRCUITLAB FINAL WIDTH FIX ===== */
+
+html,body{
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow-x:hidden !important;
+}
+
+.page{
+  width:100% !important;
+  max-width:1500px !important;
+  margin:0 auto !important;
+  padding:12px !important;
+  box-sizing:border-box !important;
+}
+
+.layout{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+
+/* PHONE + TABLET */
+@media screen and (max-width:1100px){
+  .page{
+    width:100% !important;
+    max-width:none !important;
+    padding:8px !important;
+  }
+
+  .layout{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    gap:8px !important;
+  }
+
+  .left,
+  .right{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+
+  .panel{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+}
+
+/* DESKTOP */
+@media screen and (min-width:1101px){
+  .layout{
+    grid-template-columns:minmax(0,1.25fr) minmax(330px,.9fr) !important;
+  }
+}
+
+/* ===== END FINAL WIDTH FIX ===== */
+
+
+/* STORAGE BAR — CYAN ONLY */
+.storage-panel .progress.disk i,
+.progress.disk i {
+    background: #79e2df !important;
+    background-image: none !important;
+}
+
 </style>
 </head>
 <body>
@@ -195,39 +1005,67 @@ button,select{font:inherit;color:inherit}
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel storage-panel">
         <div class="panel-title"><span class="num">3</span> STORAGE</div>
         <div class="panel-body">
           <div class="metrics">
-            <div class="metric"><div class="label">ROOT USED</div><div class="value" id="diskUsed">-- GiB</div></div>
-            <div class="metric"><div class="label">TOTAL</div><div class="value" id="diskTotal">-- GiB</div></div>
-            <div class="metric"><div class="label">FREE</div><div class="value" id="diskFree">-- GiB</div></div>
-            <div class="metric"><div class="label">USAGE</div><div class="value" id="diskPct">--%</div></div>
+            <div class="metric">
+              <div class="label">ROOT USED</div>
+              <div class="value" id="diskUsed">-- GiB</div>
+            </div>
+            <div class="metric">
+              <div class="label">TOTAL</div>
+              <div class="value" id="diskTotal">-- GiB</div>
+            </div>
+            <div class="metric">
+              <div class="label">FREE</div>
+              <div class="value" id="diskFree">-- GiB</div>
+            </div>
+            <div class="metric">
+              <div class="label">USAGE</div>
+              <div class="value" id="diskPct">--%</div>
+            </div>
           </div>
-          <div class="progress disk"><i id="diskBar"></i></div>
+
+          <div class="progress disk">
+            <i id="diskBar"></i>
+          </div>
+
+          <div class="storage-list">
+            <div class="storage-head">
+              <span>DEVICE</span>
+              <span>MOUNT</span>
+              <span>FS</span>
+              <span>USED</span>
+              <span>FREE</span>
+              <span>USE%</span>
+            </div>
+
+            <div id="storageRows">
+              <div class="storage-empty">Waiting for storage data...</div>
+            </div>
+          </div>
         </div>
       </section>
-
-      <section class="panel">
+      <section class="panel network-panel">
         <div class="panel-title"><span class="num">4</span> NETWORK</div>
         <div class="panel-body">
-          <div class="netgrid">
-            <div class="netbox">
+          <div class="metrics">
+            <div class="metric">
               <div class="label">DOWNLOAD</div>
-              <div class="big" id="rxRate">-- KiB/s</div>
-              <canvas class="graph small" id="rxGraph"></canvas>
+              <div class="value rx" id="rxRate">--</div>
             </div>
-            <div class="netbox">
+            <div class="metric">
               <div class="label">UPLOAD</div>
-              <div class="big" id="txRate">-- KiB/s</div>
-              <canvas class="graph small" id="txGraph"></canvas>
+              <div class="value tx" id="txRate">--</div>
             </div>
+          </div>
+<div class="graph net-graph">
+            <canvas id="netGraph"></canvas>
           </div>
         </div>
       </section>
-    </section>
 
-    <section class="right">
       <section class="panel">
         <div class="panel-title"><span class="num">5</span> SYSTEM</div>
         <div class="panel-body">
@@ -297,79 +1135,96 @@ function draw(id,data,color){
   if(c.width!==w*d||c.height!==h*d){c.width=w*d;c.height=h*d}
   const x=c.getContext("2d"); x.setTransform(d,0,0,d,0,0);
   x.clearRect(0,0,w,h);
-  x.strokeStyle="#15201d"; x.lineWidth=1;
+  x.strokeStyle="#14231f"; x.lineWidth=1;
   for(let yy=20;yy<h;yy+=30){x.beginPath();x.moveTo(0,yy+.5);x.lineTo(w,yy+.5);x.stroke()}
   if(data.length<2)return;
   const max = id==="cpuGraph"||id==="memGraph" ? 100 : Math.max(1, ...data)*1.15;
-  x.strokeStyle=color;x.lineWidth=2;x.beginPath();
+  x.strokeStyle=color;
+  x.lineWidth=2;
+  x.shadowBlur=5;
+  x.shadowColor=color;
+  x.beginPath();
   data.forEach((v,i)=>{
     const px=i*(w-2)/(MAX-1)+1;
     const py=h-5-(Math.max(0,v)/max)*(h-10);
     i?x.lineTo(px,py):x.moveTo(px,py);
   });
   x.stroke();
+  x.shadowBlur=0;
 }
 function renderGraphs(){
-  draw("cpuGraph",hist.cpu,"#79e2df");
-  draw("memGraph",hist.mem,"#79e2df");
-  draw("rxGraph",hist.rx,"#9ee493");
-  draw("txGraph",hist.tx,"#e4df86");
+  draw("cpuGraph", hist.cpu, "#ff5c5c");
+  draw("memGraph", hist.mem, "#9ee493");
+  drawNetworkGraph();
 }
-function setText(id,v){$(id).textContent=v==null||v===""?"--":v}
 
-function renderSystem(d){
-  const cpu=d.cpu||{}, mem=d.memory||{}, disk=d.disk||{}, bat=d.battery||{};
-  const cpuPct=num(cpu.usage_percent), memPct=num(mem.usage_percent), diskPct=num(disk.usage_percent);
-  setText("cpuPct",cpuPct==null?"--%":cpuPct.toFixed(0)+"%");
-  setText("cores",cpu.cores); setText("threads",cpu.threads);
-  setText("memPct",memPct==null?"--%":memPct.toFixed(0)+"%");
-  setText("memUsed",mem.used_gb!=null?Number(mem.used_gb).toFixed(2)+" GiB":null);
-  setText("memTotal",mem.total_gb!=null?Number(mem.total_gb).toFixed(2)+" GiB":null);
-  const free = mem.total_gb!=null&&mem.used_gb!=null ? Number(mem.total_gb)-Number(mem.used_gb):null;
-  setText("memFree",free==null?null:free.toFixed(2)+" GiB");
-  setText("diskUsed",disk.used_gb!=null?Number(disk.used_gb).toFixed(2)+" GiB":null);
-  setText("diskTotal",disk.total_gb!=null?Number(disk.total_gb).toFixed(2)+" GiB":null);
-  const df = disk.total_gb!=null&&disk.used_gb!=null ? Number(disk.total_gb)-Number(disk.used_gb):null;
-  setText("diskFree",df==null?null:df.toFixed(2)+" GiB");
-  setText("diskPct",diskPct==null?"--%":diskPct.toFixed(0)+"%");
-  $("memBar").style.width=Math.max(0,Math.min(100,memPct||0))+"%";
-  $("diskBar").style.width=Math.max(0,Math.min(100,diskPct||0))+"%";
+function drawNetworkGraph(){
+  const c = $("netGraph");
+  if(!c) return;
 
-  const temps=d.temperature||{};
-  const vals=Object.entries(temps);
-  $("tempRows").innerHTML=vals.length
-    ? vals.map(([k,v])=>`<div class="row"><span>${escapeHtml(k).toUpperCase()}</span><span>${escapeHtml(String(v))} °C</span></div>`).join("")
-    : `<div class="row"><span>SYSTEM</span><span>--</span></div>`;
+  const r = c.getBoundingClientRect();
+  if(!r.width || !r.height) return;
 
-  const mainTemp=vals.length?num(vals[0][1]):null;
-  setText("cpuTemp",mainTemp==null?"--":mainTemp.toFixed(1)+" °C");
-  setText("uptime",fmtUptime(num(d.uptime_seconds)));
-  setText("sysUptime",fmtUptime(num(d.uptime_seconds)));
-  setText("host",d.hostname); setText("os",d.os);
-  setText("kernel",d.kernel);
+  const d = window.devicePixelRatio || 1;
+  const w = Math.floor(r.width);
+  const h = Math.floor(r.height);
 
-  const bp=num(bat.percent);
-  $("battery").textContent="BAT "+(bp==null?"--":bp.toFixed(0))+"%";
-  setText("batDetail",bp==null?"--":bp.toFixed(0)+"%");
-  setText("power",bat.charging==null?"--":bat.charging?"CHARGING":"DISCHARGING");
-
-  push(hist.cpu,cpuPct??0); push(hist.mem,memPct??0);
-
-  const n=d.network||{};
-  const now=performance.now();
-  if(lastNet && lastTime){
-    const dt=(now-lastTime)/1000;
-    if(dt>0){
-      const rx=Math.max(0,(Number(n.bytes_received||0)-lastNet.rx)/dt);
-      const tx=Math.max(0,(Number(n.bytes_sent||0)-lastNet.tx)/dt);
-      push(hist.rx,rx/1024); push(hist.tx,tx/1024);
-      $("rxRate").textContent=fmtBytes(rx);
-      $("txRate").textContent=fmtBytes(tx);
-    }
+  if(c.width !== w*d || c.height !== h*d){
+    c.width = w*d;
+    c.height = h*d;
   }
-  lastNet={rx:Number(n.bytes_received||0),tx:Number(n.bytes_sent||0)};
-  lastTime=now;
-  renderGraphs();
+
+  const x = c.getContext("2d");
+  x.setTransform(d,0,0,d,0,0);
+  x.clearRect(0,0,w,h);
+
+  /* graph grid */
+  x.strokeStyle = "#14231f";
+  x.lineWidth = 1;
+
+  for(let yy=20; yy<h; yy+=30){
+    x.beginPath();
+    x.moveTo(0, yy + 0.5);
+    x.lineTo(w, yy + 0.5);
+    x.stroke();
+  }
+
+  const rx = hist.rx || [];
+  const tx = hist.tx || [];
+
+  if(rx.length < 2 && tx.length < 2) return;
+
+  const all = rx.concat(tx);
+  const max = Math.max(1, ...all) * 1.15;
+
+  function plot(data, color){
+    if(data.length < 2) return;
+
+    x.strokeStyle = color;
+    x.lineWidth = 2;
+    x.lineJoin = "round";
+    x.lineCap = "round";
+    x.beginPath();
+
+    data.forEach((v,i)=>{
+      const px = i * (w - 2) / (MAX - 1) + 1;
+      const py = h - 5 - (Math.max(0,v) / max) * (h - 10);
+
+      if(i === 0){
+        x.moveTo(px,py);
+      }else{
+        x.lineTo(px,py);
+      }
+    });
+
+    x.stroke();
+  }
+
+  /* DOWNLOAD */
+plot(rx, "#e4df86");
+
+/* UPLOAD */
+plot(tx, "#c792ea");
 }
 
 async function fetchJson(url){
@@ -378,18 +1233,82 @@ async function fetchJson(url){
   return r.json();
 }
 
+function renderStorage(data){
+  const list = Array.isArray(data)
+    ? data
+    : ((data && data.filesystems) || []);
+
+  const box = $("storageRows");
+
+  if(!Array.isArray(list) || !list.length){
+    box.innerHTML =
+      '<div class="storage-empty">No filesystem data returned by API.</div>';
+    return;
+  }
+
+  box.innerHTML = list.map(fs => {
+    const device = fs.device || "--";
+    const mount = fs.mountpoint || "--";
+    const type = fs.filesystem || "--";
+
+    const used = fs.used_gb != null
+      ? Number(fs.used_gb).toFixed(2) + " GiB"
+      : "--";
+
+    const free = fs.free_gb != null
+      ? Number(fs.free_gb).toFixed(2) + " GiB"
+      : "--";
+
+    const pct = fs.usage_percent != null
+      ? Number(fs.usage_percent).toFixed(1) + "%"
+      : "--";
+
+    const hot =
+      fs.usage_percent != null &&
+      Number(fs.usage_percent) >= 80;
+
+    return `<div class="storage-row${hot ? " storage-hot" : ""}">
+      <span class="storage-device"
+        title="${escapeHtml(String(device))}">
+        ${escapeHtml(String(device))}
+      </span>
+
+      <span class="storage-mount"
+        title="${escapeHtml(String(mount))}">
+        ${escapeHtml(String(mount))}
+      </span>
+
+      <span class="storage-fs">
+        ${escapeHtml(String(type))}
+      </span>
+
+      <span class="storage-size">
+        ${escapeHtml(used)}
+      </span>
+
+      <span class="storage-size">
+        ${escapeHtml(free)}
+      </span>
+
+      <span class="storage-size">
+        ${escapeHtml(pct)}
+      </span>
+    </div>`;
+  }).join("");
+}
+
 function renderProcesses(data){
-  let list = Array.isArray(data) ? data : (data?.processes || []);
+  let list = Array.isArray(data) ? data : ((data && data.processes) || []);
   if(!Array.isArray(list)) list=[];
-  list=list.slice().sort((a,b)=>(Number(b.cpu_percent??b.cpu??0)-Number(a.cpu_percent??a.cpu??0)));
+  list=list.slice().sort((a,b)=>(Number((b.cpu_percent != null ? b.cpu_percent : (b.cpu != null ? b.cpu : 0)))-Number((a.cpu_percent != null ? a.cpu_percent : (a.cpu != null ? a.cpu : 0)))));
   const box=$("processList");
   if(!list.length){
     box.innerHTML='<div class="empty">No process data returned by API.</div>';
     return;
   }
   box.innerHTML=list.slice(0,100).map(p=>{
-    const pid=p.pid??"--", name=p.name??p.program??"--", user=p.username??p.user??"--";
-    const cpu=num(p.cpu_percent??p.cpu), mem=num(p.memory_percent??p.mem_percent??p.mem);
+    const pid=p.pid != null ? p.pid : "--", name=p.name != null ? p.name : (p.program != null ? p.program : "--"), user=p.username != null ? p.username : (p.user != null ? p.user : "--");
+    const cpu=num(p.cpu_percent != null ? p.cpu_percent : p.cpu), mem=num(p.memory_percent != null ? p.memory_percent : (p.mem_percent != null ? p.mem_percent : p.mem));
     return `<div class="proc-row">
       <span class="pid">${escapeHtml(String(pid))}</span>
       <span class="name" title="${escapeHtml(String(name))}">${escapeHtml(String(name))}</span>
@@ -404,22 +1323,356 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-async function refresh(){
-  try{
-    const data=await fetchJson("/api/system");
-    renderSystem(data);
-    $("status").innerHTML='<b>●</b> ONLINE';
-    $("status").querySelector("b").style.color="var(--green)";
-    try{
-      const p=await fetchJson("/api/processes");
-      renderProcesses(p);
-    }catch(e){
-      if(data.processes) renderProcesses(data.processes);
+function setText(id, value){
+  const el = $(id);
+  if(el) el.textContent = value;
+}
+
+function renderSystem(d){
+  const cpu = d.cpu || {};
+  const mem = d.memory || {};
+  const disk = d.disk || {};
+  const bat = d.battery || {};
+  const temp = d.temperature || {};
+  const net = d.network || {};
+
+  /* CPU */
+  const cpuUsage = num(cpu.usage_percent);
+
+  setText(
+    "cpuPct",
+    cpuUsage == null ? "--%" : cpuUsage.toFixed(1) + "%"
+  );
+
+  setText(
+    "cores",
+    cpu.cores != null ? String(cpu.cores) : "--"
+  );
+
+  setText(
+    "threads",
+    cpu.threads != null ? String(cpu.threads) : "--"
+  );
+
+  /* CPU history */
+  if(cpuUsage != null){
+    push(hist.cpu, cpuUsage);
+  }
+
+  /* CPU temperature */
+  let cpuTemperature = null;
+
+  if(temp["Package id 0"] != null){
+    cpuTemperature = Number(temp["Package id 0"]);
+  }else if(temp["Core 0"] != null){
+    cpuTemperature = Number(temp["Core 0"]);
+  }
+
+  setText(
+    "cpuTemp",
+    Number.isFinite(cpuTemperature)
+      ? cpuTemperature.toFixed(1) + " °C"
+      : "--"
+  );
+
+  /* Uptime */
+  setText(
+    "uptime",
+    d.uptime_seconds != null
+      ? fmtUptime(Number(d.uptime_seconds))
+      : "--"
+  );
+
+  setText(
+    "sysUptime",
+    d.uptime_seconds != null
+      ? fmtUptime(Number(d.uptime_seconds))
+      : "--"
+  );
+
+  /* MEMORY */
+  const memUsage = num(mem.usage_percent);
+
+  setText(
+    "memUsed",
+    mem.used_gb != null
+      ? Number(mem.used_gb).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "memTotal",
+    mem.total_gb != null
+      ? Number(mem.total_gb).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "memFree",
+    mem.total_gb != null && mem.used_gb != null
+      ? Math.max(
+          0,
+          Number(mem.total_gb) - Number(mem.used_gb)
+        ).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "memPct",
+    memUsage == null
+      ? "--%"
+      : memUsage.toFixed(1) + "%"
+  );
+
+  if(memUsage != null){
+    push(hist.mem, memUsage);
+    const bar = $("memBar");
+    if(bar) bar.style.width = Math.min(100, Math.max(0, memUsage)) + "%";
+  }
+
+  /* STORAGE */
+  const diskUsage = num(disk.usage_percent);
+
+  setText(
+    "diskUsed",
+    disk.used_gb != null
+      ? Number(disk.used_gb).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "diskTotal",
+    disk.total_gb != null
+      ? Number(disk.total_gb).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "diskFree",
+    disk.total_gb != null && disk.used_gb != null
+      ? Math.max(
+          0,
+          Number(disk.total_gb) - Number(disk.used_gb)
+        ).toFixed(2) + " GiB"
+      : "-- GiB"
+  );
+
+  setText(
+    "diskPct",
+    diskUsage == null
+      ? "--%"
+      : diskUsage.toFixed(1) + "%"
+  );
+
+  if(diskUsage != null){
+    const bar = $("diskBar");
+    if(bar){
+      bar.style.width =
+        Math.min(100, Math.max(0, diskUsage)) + "%";
     }
-  }catch(e){
-    $("status").innerHTML='<b class="bad">●</b> OFFLINE';
+  }
+
+  /* NETWORK */
+  const now = performance.now();
+
+  if(lastNet && lastTime){
+    const dt = (now - lastTime) / 1000;
+
+    if(dt > 0){
+      const rx = Math.max(
+        0,
+        (Number(net.bytes_received || 0) - lastNet.rx) / dt
+      );
+
+      const tx = Math.max(
+        0,
+        (Number(net.bytes_sent || 0) - lastNet.tx) / dt
+      );
+
+      push(hist.rx, rx / 1024);
+      push(hist.tx, tx / 1024);
+
+      setText("rxRate", fmtBytes(rx));
+      setText("txRate", fmtBytes(tx));
+    }
+  }
+
+  lastNet = {
+    rx: Number(net.bytes_received || 0),
+    tx: Number(net.bytes_sent || 0)
+  };
+
+  lastTime = now;
+
+  /* SYSTEM */
+  setText(
+    "host",
+    d.hostname != null ? String(d.hostname) : "--"
+  );
+
+  setText(
+    "os",
+    d.os != null
+      ? String(d.os) +
+        (d.os_release ? " " + String(d.os_release) : "")
+      : "--"
+  );
+
+  setText(
+    "kernel",
+    d.kernel != null ? String(d.kernel) : "--"
+  );
+
+  setText(
+    "batDetail",
+    bat.percent != null
+      ? Number(bat.percent).toFixed(0) + "%"
+      : "--"
+  );
+
+  let power = "--";
+
+  if(bat.charging === true){
+    power = "CHARGING";
+  }else if(bat.charging === false){
+    power = "DISCHARGING";
+  }
+
+  setText("power", power);
+
+  /* Header battery */
+  setText(
+    "battery",
+    bat.percent != null
+      ? "BAT " + Number(bat.percent).toFixed(0) + "%"
+      : "BAT --%"
+  );
+
+  /* TEMPERATURES */
+  const tempBox = $("tempRows");
+
+  if(tempBox){
+    const entries = Object.entries(temp)
+      .filter(([name, value]) => Number.isFinite(Number(value)))
+      .sort((a,b) => a[0].localeCompare(b[0]));
+
+    if(entries.length){
+      tempBox.innerHTML = entries.map(([name,value]) => `
+        <div class="row">
+          <span>${escapeHtml(String(name))}</span>
+          <span>${Number(value).toFixed(1)} °C</span>
+        </div>
+      `).join("");
+    }
+  }
+
+  renderGraphs();
+}
+
+async function refresh(){
+
+  // =========================
+  // SYSTEM
+  // =========================
+  let systemOK = false;
+
+  try {
+    const data = await fetchJson("/api/system");
+
+    console.log("[SYSTEM]", data);
+
+    systemOK = true;
+
+    // Update system information
+    renderSystem(data);
+
+    // ONLINE status
+    const status = $("status");
+    if (status) {
+      status.innerHTML = '<b>●</b> ONLINE';
+      const dot = status.querySelector("b");
+      if (dot) dot.style.color = "var(--green)";
+    }
+
+    // LOAD AVERAGE
+    let load = null;
+
+    if (data.load != null) {
+      load = Number(data.load);
+    } else if (data.load_average != null) {
+      load = Number(data.load_average);
+    } else if (data.loadavg != null) {
+      load = Number(data.loadavg);
+    } else if (data.detail && data.detail.load != null) {
+      load = Number(data.detail.load);
+    }
+
+    if (load != null && Number.isFinite(load)) {
+      setText("load", load.toFixed(2));
+    } else {
+      setText("load", "--");
+    }
+
+  } catch (e) {
+    console.error("[SYSTEM API]", e);
+
+    const status = $("status");
+
+    if (status) {
+      status.innerHTML = '<b class="bad">●</b> OFFLINE';
+
+      const dot = status.querySelector("b");
+      if (dot) dot.style.color = "var(--red)";
+    }
+  }
+
+  // =========================
+  // PROCESSES
+  // =========================
+  try {
+
+    const p = await fetchJson("/api/processes");
+
+    console.log("[PROCESSES]", p);
+
+    renderProcesses(p);
+
+  } catch (e) {
+
+    console.error("[PROCESSES]", e);
+
+    const box = $("processList");
+
+    if (box) {
+      box.innerHTML =
+        '<div class="empty">Process data unavailable.</div>';
+    }
+  }
+
+  // =========================
+  // STORAGE
+  // =========================
+  try {
+
+    const storage = await fetchJson("/api/storage");
+
+    console.log("[STORAGE]", storage);
+
+    renderStorage(storage);
+
+  } catch (e) {
+
+    console.error("[STORAGE]", e);
+
+    const box = $("storageRows");
+
+    if (box) {
+      box.innerHTML =
+        '<div class="storage-empty">Storage data unavailable.</div>';
+    }
   }
 }
+
 function clock(){
   const d=new Date();
   $("clock").textContent=d.toLocaleTimeString([], {hour12:false});
@@ -428,5 +1681,11 @@ setInterval(clock,1000); clock();
 setInterval(refresh,1000); refresh();
 window.addEventListener("resize",renderGraphs);
 </script>
+
+
+
+
+
+
 </body>
 </html>

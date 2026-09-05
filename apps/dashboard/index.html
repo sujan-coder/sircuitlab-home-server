@@ -3,185 +3,823 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SircuitLab</title>
+<title>SircuitLab — Home Server</title>
 
 <style>
+:root {
+    --bg: #020405;
+    --panel: #060a0d;
+    --panel-hover: #080e12;
+    --line: #14242b;
+    --line-active: #1d6875;
+
+    --cyan: #20d9ef;
+    --green: #45e69a;
+    --yellow: #e4c45b;
+    --purple: #b879ff;
+    --blue: #54aef5;
+
+    --text: #edf5f7;
+    --muted: #778890;
+}
+
 * {
     box-sizing: border-box;
 }
 
+html,
 body {
     margin: 0;
-    background: #070a0d;
-    color: #d7e1e8;
-    font-family: "Courier New", monospace;
-    padding: 18px;
+    min-height: 100%;
+    background: #020405;
+    color: var(--text);
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 }
 
-.container {
-    max-width: 1100px;
-    margin: auto;
+body {
+    min-height: 100vh;
+
+    background:
+        linear-gradient(
+            rgba(32, 217, 239, 0.018) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(32, 217, 239, 0.018) 1px,
+            transparent 1px
+        ),
+        #020405;
+
+    background-size: 44px 44px;
 }
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.page {
+    width: min(1280px, calc(100% - 28px));
+    margin: auto;
+    padding: 20px 0 30px;
+}
+
+/* HEADER */
 
 .header {
-    border: 1px solid #26343d;
-    background: #080c10;
-    padding: 18px 20px;
-    margin-bottom: 18px;
-    box-shadow: 0 0 12px rgba(0, 220, 255, 0.08);
-}
+    position: relative;
 
-.header-top {
+    min-height: 94px;
+
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 22px;
+    margin-bottom: 24px;
+
+    border: 1px solid var(--line);
+
+    background: rgba(3, 7, 9, 0.96);
+
+    overflow: hidden;
 }
 
-.logo {
-    color: #00e5ff;
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 3px;
+.header::before,
+.header::after {
+    content: "";
+
+    position: absolute;
+
+    width: 18px;
+    height: 18px;
+
+    border-color: var(--cyan);
+    border-style: solid;
+
+    opacity: .7;
 }
 
-.online {
-    color: #00ff9d;
-    font-size: 14px;
+.header::before {
+    left: -1px;
+    top: -1px;
+
+    border-width: 2px 0 0 2px;
 }
 
-.online-dot {
-    display: inline-block;
-    width: 9px;
-    height: 9px;
-    background: #00ff9d;
+.header::after {
+    right: -1px;
+    bottom: -1px;
+
+    border-width: 0 2px 2px 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.menu {
+    width: 34px;
+    height: 34px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--line);
+
+    color: var(--cyan);
+
+    font-size: 19px;
+}
+
+.brand-name {
+    color: var(--cyan);
+
+    font-family: "Courier New", monospace;
+
+    font-size: clamp(1.45rem, 4vw, 2rem);
+
+    font-weight: 700;
+
+    letter-spacing: .07em;
+}
+
+.brand-subtitle {
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .7rem;
+
+    letter-spacing: .08em;
+}
+
+.header-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-box {
+    min-width: 125px;
+
+    padding: 9px 14px;
+
+    border: 1px solid var(--line);
+
+    background: #05090c;
+}
+
+.status-online {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--green);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .76rem;
+
+    font-weight: 700;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    flex: 0 0 7px;
+
     border-radius: 50%;
-    margin-right: 7px;
-    box-shadow: 0 0 10px #00ff9d;
+
+    background: currentColor;
+
+    box-shadow: 0 0 10px currentColor;
 }
 
 .clock {
-    color: #65727c;
-    font-size: 14px;
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .67rem;
 }
 
-.subtitle {
-    color: #697780;
-    margin-top: 10px;
-    font-size: 14px;
-}
+/* SYSTEM INFORMATION */
 
-.section-title {
-    color: #00e5ff;
-    margin: 25px 0 12px;
-    font-size: 15px;
-    letter-spacing: 2px;
-}
-
-.grid {
+.system-strip {
     display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    border: 1px solid var(--line);
+
+    background: #05090c;
+
+    margin-bottom: 27px;
+}
+
+.system-item {
+    min-height: 65px;
+
+    padding: 12px 17px;
+
+    border-right: 1px solid var(--line);
+}
+
+.system-item:last-child {
+    border-right: 0;
+}
+
+.system-label {
+    color: var(--muted);
+
+    font-size: .62rem;
+
+    text-transform: uppercase;
+
+    letter-spacing: .08em;
+}
+
+.system-value {
+    margin-top: 6px;
+
+    color: #cdd9dc;
+
+    font-family: "Courier New", monospace;
+
+    font-size: .77rem;
+}
+
+/* SECTION */
+
+.section {
+    margin-top: 25px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    margin-bottom: 11px;
+}
+
+.section-heading-title {
+    color: var(--cyan);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .75rem;
+
+    font-weight: 700;
+
+    letter-spacing: .11em;
+}
+
+.section-heading-title::before {
+    content: "[ ";
+
+    color: var(--cyan);
+}
+
+.section-heading-title::after {
+    content: " ]";
+
+    color: var(--cyan);
+}
+
+.section-line {
+    flex: 1;
+
+    height: 1px;
+
+    background: var(--line);
+}
+
+/* CARDS */
+
+.card-grid {
+    display: grid;
+
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+
+    gap: 12px;
 }
 
 .card {
     position: relative;
-    min-height: 150px;
-    border: 1px solid #26343d;
-    background: #090d11;
-    padding: 20px;
-    text-decoration: none;
-    color: inherit;
-    transition: 0.2s ease;
+
+    min-height: 190px;
+
+    display: grid;
+
+    grid-template-columns:
+        132px
+        minmax(0, 1fr)
+        34px;
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 15px;
+
+    border: 1px solid var(--line);
+
+    background: #05090c;
+
     overflow: hidden;
+
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease;
+}
+
+.card:hover {
+    transform: translateY(-1px);
+
+    border-color: var(--line-active);
+
+    background: #070d11;
 }
 
 .card::before {
     content: "";
+
     position: absolute;
-    top: 0;
+
     left: 0;
+    top: 0;
+    bottom: 0;
+
     width: 3px;
-    height: 100%;
-    background: #00e5ff;
-    opacity: 0.8;
+
+    background: var(--cyan);
+
+    box-shadow:
+        0 0 15px rgba(32,217,239,.35);
 }
 
-.card:hover {
-    border-color: #00e5ff;
-    transform: translateY(-2px);
-    box-shadow:
-        0 0 12px rgba(0, 229, 255, 0.15),
-        inset 0 0 15px rgba(0, 229, 255, 0.03);
+.card.storage::before {
+    background: var(--purple);
+}
+
+.card.database::before {
+    background: var(--green);
+}
+
+.card.network::before {
+    background: var(--blue);
+}
+
+.card.ai::before {
+    background: var(--cyan);
+}
+
+/* ICON PANEL */
+
+.card-art {
+    height: 150px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--line);
+
+    background:
+        linear-gradient(
+            rgba(32,217,239,.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(32,217,239,.035) 1px,
+            transparent 1px
+        ),
+        #030608;
+
+    background-size: 20px 20px;
+}
+
+.card-art svg {
+    width: 78px;
+    height: 78px;
+
+    fill: none;
+
+    stroke: var(--cyan);
+
+    stroke-width: 1.6;
+
+    filter:
+        drop-shadow(
+            0 0 7px rgba(32,217,239,.35)
+        );
+}
+
+.card.storage .card-art svg {
+    stroke: var(--purple);
+}
+
+.card.database .card-art svg {
+    stroke: var(--green);
+}
+
+.card.network .card-art svg {
+    stroke: var(--blue);
+}
+
+/* CARD CONTENT */
+
+.card-content {
+    min-width: 0;
 }
 
 .card-title {
-    color: #00e5ff;
-    font-size: 18px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
+    color: var(--text);
+
+    font-family: "Courier New", monospace;
+
+    font-size: 1.1rem;
+
+    font-weight: 700;
+
+    letter-spacing: .035em;
+}
+
+.card-accent {
+    width: 34px;
+    height: 2px;
+
+    margin: 9px 0 12px;
+
+    background: var(--cyan);
+
+    box-shadow:
+        0 0 8px rgba(32,217,239,.25);
 }
 
 .card-description {
-    color: #71808a;
-    font-size: 13px;
-    line-height: 1.6;
+    max-width: 410px;
+
+    color: var(--muted);
+
+    font-size: .75rem;
+
+    line-height: 1.55;
 }
 
-.status {
-    margin-top: 18px;
-    font-size: 12px;
+.card-status {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 14px;
+
+    color: var(--green);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .64rem;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
 }
 
-.green {
-    color: #00ff9d;
+.card-status.blue {
+    color: var(--blue);
 }
 
-.yellow {
-    color: #ffe600;
+.card-status.purple {
+    color: var(--purple);
 }
 
-.purple {
-    color: #c084ff;
+.card-arrow {
+    width: 34px;
+    height: 34px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--line);
+
+    color: var(--cyan);
+
+    font-size: 1rem;
+
+    transition:
+        border-color .18s ease,
+        background .18s ease;
 }
 
-.blue {
-    color: #00bfff;
+.card:hover .card-arrow {
+    border-color: var(--cyan);
+
+    background: rgba(32,217,239,.05);
 }
+
+/* HARDWARE */
+
+.hardware-feature {
+    position: relative;
+
+    min-height: 120px;
+
+    display: grid;
+
+    grid-template-columns:
+        150px
+        minmax(0,1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 15px;
+
+    border: 1px solid rgba(228,196,91,.28);
+
+    background: #05090c;
+
+    overflow: hidden;
+}
+
+.hardware-feature::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 3px;
+
+    background: var(--yellow);
+
+    box-shadow:
+        0 0 16px rgba(228,196,91,.3);
+}
+
+.hardware-art {
+    height: 88px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid rgba(228,196,91,.18);
+
+    background: #030608;
+}
+
+.hardware-art svg {
+    width: 58px;
+    height: 58px;
+
+    fill: none;
+
+    stroke: var(--yellow);
+
+    stroke-width: 1.6;
+
+    filter:
+        drop-shadow(
+            0 0 7px rgba(228,196,91,.3)
+        );
+}
+
+.hardware-title {
+    color: var(--text);
+
+    font-family: "Courier New", monospace;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    letter-spacing: .035em;
+}
+
+.hardware-description {
+    margin-top: 6px;
+
+    color: var(--muted);
+
+    font-size: .74rem;
+
+    line-height: 1.5;
+}
+
+.hardware-link {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 10px 14px;
+
+    border: 1px solid rgba(228,196,91,.35);
+
+    color: var(--yellow);
+
+    font-family: "Courier New", monospace;
+
+    font-size: .65rem;
+
+    white-space: nowrap;
+}
+
+/* FOOTER */
 
 .footer {
-    margin-top: 18px;
-    border: 1px solid #26343d;
-    background: #080c10;
-    padding: 15px 18px;
-    color: #59666f;
-    font-size: 12px;
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 30px;
+
+    padding: 15px 2px 0;
+
+    border-top: 1px solid var(--line);
+
+    color: #4e5e65;
+
+    font-family: "Courier New", monospace;
+
+    font-size: .62rem;
 }
 
-.footer span {
-    color: #00ff9d;
-}
+/* TABLET */
 
-@media (max-width: 650px) {
-    body {
-        padding: 10px;
+@media (max-width: 850px) {
+
+    .card {
+        grid-template-columns:
+            105px
+            minmax(0,1fr)
+            34px;
     }
 
-    .grid {
+    .card-art {
+        height: 135px;
+    }
+
+    .hardware-feature {
+        grid-template-columns:
+            110px
+            minmax(0,1fr);
+    }
+
+    .hardware-link {
+        grid-column: 2;
+
+        justify-self: start;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+
+    .page {
+        width: calc(100% - 18px);
+
+        padding-top: 12px;
+    }
+
+    .header {
+        min-height: 82px;
+
+        padding: 14px;
+    }
+
+    .menu {
+        display: none;
+    }
+
+    .brand-name {
+        font-size: 1.35rem;
+    }
+
+    .status-box {
+        min-width: 96px;
+
+        padding: 8px 10px;
+    }
+
+    .system-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .system-item:nth-child(2) {
+        border-right: 0;
+    }
+
+    .system-item:nth-child(-n+2) {
+        border-bottom: 1px solid var(--line);
+    }
+
+    .card-grid {
         grid-template-columns: 1fr;
     }
 
-    .header-top {
-        align-items: flex-start;
+    .card {
+        min-height: 165px;
+
+        grid-template-columns:
+            88px
+            minmax(0,1fr)
+            32px;
+
+        gap: 13px;
+
+        padding: 12px;
     }
 
-    .logo {
-        font-size: 20px;
+    .card-art {
+        height: 135px;
     }
 
-    .clock {
-        font-size: 11px;
+    .card-art svg {
+        width: 62px;
+        height: 62px;
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+
+    .card-description {
+        font-size: .71rem;
+    }
+
+    .hardware-feature {
+        grid-template-columns:
+            82px
+            minmax(0,1fr);
+
+        gap: 13px;
+
+        padding: 12px;
+    }
+
+    .hardware-art {
+        height: 82px;
+    }
+
+    .hardware-link {
+        grid-column: 2;
+    }
+}
+
+/* SMALL PHONES */
+
+@media (max-width: 420px) {
+
+    .header-status {
+        display: none;
+    }
+
+    .card {
+        grid-template-columns:
+            72px
+            minmax(0,1fr)
+            30px;
+    }
+
+    .card-art {
+        height: 125px;
+    }
+
+    .hardware-feature {
+        grid-template-columns: 1fr;
+    }
+
+    .hardware-art {
+        width: 100%;
+    }
+
+    .hardware-link {
+        grid-column: 1;
     }
 }
 </style>
@@ -189,157 +827,801 @@ body {
 
 <body>
 
-<div class="container">
+<main class="page">
 
-    <div class="header">
-        <div class="header-top">
-            <div>
-                <div class="logo">SIRCUITLAB</div>
-                <div class="subtitle">HOME SERVER CONTROL SYSTEM</div>
+<!-- HEADER -->
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="menu">☰</div>
+
+        <div>
+            <div class="brand-name">SircuitLab</div>
+            <div class="brand-subtitle">HOME SERVER</div>
+        </div>
+
+    </div>
+
+    <div class="header-status">
+
+        <div class="status-box">
+
+            <div class="status-online">
+                <span class="status-dot"></span>
+                ONLINE
             </div>
 
-            <div>
-                <div class="online">
-                    <span class="online-dot"></span>
-                    ONLINE
-                </div>
-                <div class="clock" id="clock">00:00:00</div>
+            <div
+                class="clock"
+                id="clock">
+                --:--:--
             </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- SYSTEM INFORMATION -->
+
+<section class="system-strip">
+
+    <div class="system-item">
+        <div class="system-label">
+            Server
+        </div>
+
+        <div class="system-value">
+            Home Server
         </div>
     </div>
 
-    <div class="section-title">[ SYSTEM ]</div>
 
-    <div class="grid">
+    <div class="system-item">
+        <div class="system-label">
+            Operating System
+        </div>
 
-        <a class="card" href="/system.html">
-            <div class="card-title">SYSTEM MONITOR</div>
-            <div class="card-description">
-                Real-time system telemetry inspired by btop.
-                CPU, memory, storage, battery, temperature
-                and network monitoring.
+        <div class="system-value">
+            Ubuntu Linux
+        </div>
+    </div>
+
+
+    <div class="system-item">
+        <div class="system-label">
+            Processor
+        </div>
+
+        <div class="system-value">
+            4 Cores / 8 Threads
+        </div>
+    </div>
+
+
+    <div class="system-item">
+        <div class="system-label">
+            Memory
+        </div>
+
+        <div class="system-value">
+            8 GB RAM
+        </div>
+    </div>
+
+</section>
+
+
+<!-- SYSTEM -->
+
+<section class="section">
+
+    <div class="section-heading">
+
+        <div class="section-heading-title">
+            SYSTEM
+        </div>
+
+        <div class="section-line"></div>
+
+    </div>
+
+
+    <div class="card-grid">
+
+
+        <!-- SYSTEM MONITOR -->
+
+        <a
+            class="card"
+            href="/system.html">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <rect
+                        x="13"
+                        y="18"
+                        width="74"
+                        height="54"
+                        rx="3"/>
+
+                    <polyline
+                        points="
+                        20,57
+                        31,48
+                        39,54
+                        49,35
+                        58,49
+                        68,42
+                        78,48"/>
+
+                    <line
+                        x1="28"
+                        y1="82"
+                        x2="72"
+                        y2="82"/>
+
+                    <line
+                        x1="50"
+                        y1="72"
+                        x2="50"
+                        y2="82"/>
+
+                </svg>
+
             </div>
 
-            <div class="status green">
-                ● LIVE MONITOR
+
+            <div class="card-content">
+
+                <div class="card-title">
+                    SYSTEM MONITOR
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    Real-time CPU, memory, temperature,
+                    storage, battery and network monitoring.
+                </div>
+
+                <div class="card-status">
+
+                    <span class="status-dot"></span>
+
+                    LIVE MONITOR
+
+                </div>
+
             </div>
+
+
+            <div class="card-arrow">
+                →
+            </div>
+
         </a>
 
-        <a class="card" href="#">
-            <div class="card-title">DOCKER</div>
-            <div class="card-description">
-                Monitor containers, images, ports and
-                container resource usage.
+
+        <!-- DOCKER -->
+
+        <a
+            class="card"
+            href="#">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <path
+                        d="
+                        M15 61
+                        h46
+                        c5 0
+                        8-3
+                        10-7
+                        l4-9
+                        c2-4
+                        7-6
+                        12-4
+                        l6 3"/>
+
+                    <path
+                        d="
+                        M15 61
+                        c4 12
+                        13 19
+                        27 19
+                        h19
+                        c11 0
+                        19-5
+                        24-15"/>
+
+                    <path
+                        d="
+                        M61 53
+                        c-4-10
+                        -12-16
+                        -23-16
+                        h-9
+                        c-7 0
+                        -12 4
+                        -14 10
+                        l-2 7"/>
+
+                    <path
+                        d="
+                        M38 37
+                        v-9
+                        h9
+                        l4 9"/>
+
+                    <circle
+                        cx="76"
+                        cy="61"
+                        r="3"/>
+
+                </svg>
+
             </div>
 
-            <div class="status blue">
-                ◉ CONTAINER CONTROL
-            </div>
-        </a>
 
-        <a class="card" href="#">
-            <div class="card-title">STORAGE</div>
-            <div class="card-description">
-                Disk usage, partitions, mounted drives
-                and storage health.
+            <div class="card-content">
+
+                <div class="card-title">
+                    DOCKER
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    Monitor containers, images, ports
+                    and container resource usage.
+                </div>
+
+                <div class="card-status blue">
+
+                    <span class="status-dot"></span>
+
+                    CONTAINER CONTROL
+
+                </div>
+
             </div>
 
-            <div class="status purple">
-                ◆ STORAGE SYSTEM
-            </div>
-        </a>
 
-        <a class="card" href="#">
-            <div class="card-title">DATABASE</div>
-            <div class="card-description">
-                PostgreSQL status, database information
-                and future database controls.
+            <div class="card-arrow">
+                →
             </div>
 
-            <div class="status green">
-                ● POSTGRESQL
-            </div>
         </a>
 
     </div>
 
-    <div class="section-title">[ SERVICES ]</div>
+</section>
 
-    <div class="grid">
 
-        <a class="card" href="#">
-            <div class="card-title">NETWORK</div>
-            <div class="card-description">
-                Network interfaces, traffic statistics,
-                connectivity and network services.
+<!-- INFRASTRUCTURE -->
+
+<section class="section">
+
+    <div class="section-heading">
+
+        <div class="section-heading-title">
+            INFRASTRUCTURE
+        </div>
+
+        <div class="section-line"></div>
+
+    </div>
+
+
+    <div class="card-grid">
+
+
+        <!-- STORAGE -->
+
+        <a
+            class="card storage"
+            href="#">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <rect
+                        x="17"
+                        y="22"
+                        width="66"
+                        height="25"
+                        rx="5"/>
+
+                    <rect
+                        x="17"
+                        y="53"
+                        width="66"
+                        height="25"
+                        rx="5"/>
+
+                    <line
+                        x1="28"
+                        y1="34"
+                        x2="59"
+                        y2="34"/>
+
+                    <line
+                        x1="28"
+                        y1="65"
+                        x2="59"
+                        y2="65"/>
+
+                    <circle
+                        cx="72"
+                        cy="34"
+                        r="2"/>
+
+                    <circle
+                        cx="72"
+                        cy="65"
+                        r="2"/>
+
+                </svg>
+
             </div>
 
-            <div class="status blue">
-                ↑↓ NETWORK
+
+            <div class="card-content">
+
+                <div class="card-title">
+                    STORAGE
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    Disk usage, partitions, mounted drives
+                    and storage information.
+                </div>
+
+                <div class="card-status purple">
+
+                    <span class="status-dot"></span>
+
+                    STORAGE SYSTEM
+
+                </div>
+
             </div>
+
+
+            <div class="card-arrow">
+                →
+            </div>
+
         </a>
 
-        <a class="card" href="#">
-            <div class="card-title">AI STUDIO</div>
-            <div class="card-description">
-                Local AI models, inference services
-                and future automation controls.
+
+        <!-- DATABASE -->
+
+        <a
+            class="card database"
+            href="#">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <ellipse
+                        cx="50"
+                        cy="26"
+                        rx="28"
+                        ry="11"/>
+
+                    <path
+                        d="
+                        M22 26
+                        v43
+                        c0 7
+                        13 12
+                        28 12
+                        s28-5
+                        28-12
+                        V26"/>
+
+                    <path
+                        d="
+                        M22 47
+                        c0 7
+                        13 12
+                        28 12
+                        s28-5
+                        28-12"/>
+
+                    <path
+                        d="
+                        M22 69
+                        c0 7
+                        13 12
+                        28 12
+                        s28-5
+                        28-12"/>
+
+                </svg>
+
             </div>
 
-            <div class="status green">
-                ◉ AI SERVICES
-            </div>
-        </a>
 
-        <a class="card" href="#">
-            <div class="card-title">HARDWARE</div>
-            <div class="card-description">
-                Hardware sensors, CPU information,
-                temperatures and system devices.
+            <div class="card-content">
+
+                <div class="card-title">
+                    DATABASE
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    PostgreSQL status, database information
+                    and database management.
+                </div>
+
+                <div class="card-status">
+
+                    <span class="status-dot"></span>
+
+                    POSTGRESQL ACTIVE
+
+                </div>
+
             </div>
 
-            <div class="status yellow">
-                ⚡ HARDWARE
-            </div>
-        </a>
 
-        <a class="card" href="#">
-            <div class="card-title">SETTINGS</div>
-            <div class="card-description">
-                SircuitLab configuration, services,
-                system preferences and administration.
+            <div class="card-arrow">
+                →
             </div>
 
-            <div class="status">
-                ⚙ CONFIGURATION
-            </div>
         </a>
 
     </div>
 
-    <div class="footer">
-        <span>●</span> SircuitLab Home Server
-        &nbsp; | &nbsp;
-        Cyberpunk Control Interface
+</section>
+
+
+<!-- SERVICES -->
+
+<section class="section">
+
+    <div class="section-heading">
+
+        <div class="section-heading-title">
+            SERVICES
+        </div>
+
+        <div class="section-line"></div>
+
     </div>
 
-</div>
+
+    <div class="card-grid">
+
+
+        <!-- NETWORK -->
+
+        <a
+            class="card network"
+            href="#">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <circle
+                        cx="50"
+                        cy="25"
+                        r="6"/>
+
+                    <circle
+                        cx="28"
+                        cy="70"
+                        r="6"/>
+
+                    <circle
+                        cx="72"
+                        cy="70"
+                        r="6"/>
+
+                    <line
+                        x1="50"
+                        y1="31"
+                        x2="31"
+                        y2="64"/>
+
+                    <line
+                        x1="50"
+                        y1="31"
+                        x2="69"
+                        y2="64"/>
+
+                    <path
+                        d="M37 49h26"/>
+
+                    <path
+                        d="
+                        M19 52
+                        c8-10
+                        18-15
+                        31-15
+                        s23 5
+                        31 15"/>
+
+                </svg>
+
+            </div>
+
+
+            <div class="card-content">
+
+                <div class="card-title">
+                    NETWORK
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    Network interfaces, connectivity
+                    and traffic information.
+                </div>
+
+                <div class="card-status blue">
+
+                    <span class="status-dot"></span>
+
+                    NETWORK MONITOR
+
+                </div>
+
+            </div>
+
+
+            <div class="card-arrow">
+                →
+            </div>
+
+        </a>
+
+
+        <!-- AI STUDIO -->
+
+        <a
+            class="card ai"
+            href="#">
+
+            <div class="card-art">
+
+                <svg viewBox="0 0 100 100">
+
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r="27"/>
+
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r="10"/>
+
+                    <circle
+                        cx="25"
+                        cy="39"
+                        r="6"/>
+
+                    <circle
+                        cx="75"
+                        cy="39"
+                        r="6"/>
+
+                    <circle
+                        cx="31"
+                        cy="72"
+                        r="6"/>
+
+                    <circle
+                        cx="69"
+                        cy="72"
+                        r="6"/>
+
+                    <line
+                        x1="31"
+                        y1="41"
+                        x2="41"
+                        y2="46"/>
+
+                    <line
+                        x1="69"
+                        y1="41"
+                        x2="59"
+                        y2="46"/>
+
+                    <line
+                        x1="37"
+                        y1="69"
+                        x2="43"
+                        y2="59"/>
+
+                    <line
+                        x1="63"
+                        y1="69"
+                        x2="57"
+                        y2="59"/>
+
+                </svg>
+
+            </div>
+
+
+            <div class="card-content">
+
+                <div class="card-title">
+                    AI STUDIO
+                </div>
+
+                <div class="card-accent"></div>
+
+                <div class="card-description">
+                    Local AI models, inference services
+                    and model management.
+                </div>
+
+                <div class="card-status">
+
+                    <span class="status-dot"></span>
+
+                    AI SERVICES
+
+                </div>
+
+            </div>
+
+
+            <div class="card-arrow">
+                →
+            </div>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- HARDWARE -->
+
+<section class="section">
+
+    <div class="section-heading">
+
+        <div class="section-heading-title">
+            HARDWARE
+        </div>
+
+        <div class="section-line"></div>
+
+    </div>
+
+
+    <a
+        class="hardware-feature"
+        href="/hardware/">
+
+        <div class="hardware-art">
+
+            <svg viewBox="0 0 100 100">
+
+                <rect
+                    x="30"
+                    y="30"
+                    width="40"
+                    height="40"
+                    rx="4"/>
+
+                <rect
+                    x="39"
+                    y="39"
+                    width="22"
+                    height="22"/>
+
+                <line x1="30" y1="20" x2="30" y2="30"/>
+                <line x1="40" y1="20" x2="40" y2="30"/>
+                <line x1="50" y1="20" x2="50" y2="30"/>
+                <line x1="60" y1="20" x2="60" y2="30"/>
+                <line x1="70" y1="20" x2="70" y2="30"/>
+
+                <line x1="30" y1="70" x2="30" y2="80"/>
+                <line x1="40" y1="70" x2="40" y2="80"/>
+                <line x1="50" y1="70" x2="50" y2="80"/>
+                <line x1="60" y1="70" x2="60" y2="80"/>
+                <line x1="70" y1="70" x2="70" y2="80"/>
+
+                <line x1="20" y1="30" x2="30" y2="30"/>
+                <line x1="20" y1="40" x2="30" y2="40"/>
+                <line x1="20" y1="50" x2="30" y2="50"/>
+                <line x1="20" y1="60" x2="30" y2="60"/>
+                <line x1="20" y1="70" x2="30" y2="70"/>
+
+                <line x1="70" y1="30" x2="80" y2="30"/>
+                <line x1="70" y1="40" x2="80" y2="40"/>
+                <line x1="70" y1="50" x2="80" y2="50"/>
+                <line x1="70" y1="60" x2="80" y2="60"/>
+                <line x1="70" y1="70" x2="80" y2="70"/>
+
+            </svg>
+
+        </div>
+
+
+        <div>
+
+            <div class="hardware-title">
+                LAB CONTROL
+            </div>
+
+            <div class="hardware-description">
+                Manage and monitor hardware projects
+                and connected devices.
+            </div>
+
+        </div>
+
+
+        <div class="hardware-link">
+            VIEW PROJECTS
+            <span>→</span>
+        </div>
+
+    </a>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer class="footer">
+
+    <span>
+        SircuitLab Home Server
+    </span>
+
+    <span>
+        © 2026
+    </span>
+
+</footer>
+
+</main>
+
 
 <script>
 
 function updateClock() {
+
     const now = new Date();
 
-    const time =
-        String(now.getHours()).padStart(2, "0") + ":" +
-        String(now.getMinutes()).padStart(2, "0") + ":" +
-        String(now.getSeconds()).padStart(2, "0");
-
-    document.getElementById("clock").textContent = time;
+    document.getElementById("clock").textContent =
+        now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
 }
 
-setInterval(updateClock, 1000);
 updateClock();
+
+setInterval(updateClock, 1000);
 
 </script>
 
